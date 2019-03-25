@@ -1,0 +1,31 @@
+
+char reprPiece(int i) {
+    return *COLOUR_PIECE_MAP[i];
+}
+
+void reprMove(Move *m) {
+    printf("\t");
+   
+    if (is_pawn[m->main->on_from]) printf(FILE_MAP[m->main->to]); 
+    else printf(PIECE_MAP[m->main->on_from]);
+
+    if (!is_empty[m->main->on_to]) printf("x");
+    
+    if (!is_pawn[m->main->on_from]) printf(FILE_MAP[m->main->to]);
+    printf(RANK_MAP_S[m->main->to]);
+}
+
+void printBoard(Board *b)
+{
+    int i = 0;
+    for (i = 0; i < 8; i++) 
+        printf("\t%c %c %c %c %c %c %c %c\n",
+            reprPiece(b->piecemap[i*8+0]),
+            reprPiece(b->piecemap[i*8+1]),
+            reprPiece(b->piecemap[i*8+2]),
+            reprPiece(b->piecemap[i*8+3]),
+            reprPiece(b->piecemap[i*8+4]),
+            reprPiece(b->piecemap[i*8+5]),
+            reprPiece(b->piecemap[i*8+6]),
+            reprPiece(b->piecemap[i*8+7]));
+}
