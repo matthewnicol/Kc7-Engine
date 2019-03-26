@@ -7,16 +7,22 @@ int isin(int t, int l[])
     return matches;
 }
 
+// Board
+void reverseMove(Board*, Move*);
+int can_opponent_attack(Board*, int);
+Board get_board(Turn t);
+void apply_move (Board *b, Move *m);
+void reverse_move(Board *b, Move *m);
+int trim_invalid_positions(Board*, Move**, int);
+void standard (Board *b);
+Board* copy_board(Board*);
+void applyMove(Board*, Move*); 
 PieceMovement *blankPieceMovement(void);
-PieceMovement *makePieceMovement(int from, int to, Piece on_from, Piece on_to);
-Move *makeMove(PieceMovement *main, PieceMovement *alt);
+PieceMovement *makePieceMovement(int, int, Piece, Piece);
+Move *makeMove(PieceMovement*, PieceMovement*);
 int same_team(Board*, int, int);
 
+#include "board.c"
 #include "devel.c"
-#include "pawn.c"
-#include "knight.c"
-#include "bishop.c"
-#include "rook.c"
-#include "queen.c"
-#include "king.c"
+#include "pieces/pieces.h"
 #include "move.c"

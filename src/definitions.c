@@ -94,3 +94,9 @@ static int is_pawn[] =   {0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1};
 static int is_empty[] =  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static int is_black[] =  {0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
 static int is_white[] =  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1};
+
+/* Does a board have the same side's piece in sq1 and sq2 */
+int same_team(Board *b, int sq1, int sq2) {
+    return (is_black[b->piecemap[sq1]] && is_black[b->piecemap[sq2]]) ||
+        (is_white[b->piecemap[sq1]] && is_white[b->piecemap[sq2]]);
+}

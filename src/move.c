@@ -21,33 +21,27 @@ Move *makeMove (PieceMovement *main, PieceMovement *alt)
     return m;
 }
 
-void validMoves(Board *b) /* List all valid moves on a current board */
+
+void applyMove(Board *b, Move *m)
 {
-    int move_count = 0;
-    int i;
-    Move **moves = malloc(sizeof(Move*)*30);
-    for (i = 0; i < 64; i++) {
-        if ((is_white[b->piecemap[i]] && b->turn == PLAYER_WHITE) || (is_black[b->piecemap[i]] && b->turn == PLAYER_BLACK)) {
-            if      (PIECE_MAP[b->piecemap[i]] == "P") move_count += pawn_moves  (b, moves+move_count, i);
-            else if (PIECE_MAP[b->piecemap[i]] == "N") move_count += knight_moves(b, moves+move_count, i);
-            else if (PIECE_MAP[b->piecemap[i]] == "B") move_count += bishop_moves(b, moves+move_count, i);
-            else if (PIECE_MAP[b->piecemap[i]] == "R") move_count += rook_moves  (b, moves+move_count, i);
-            else if (PIECE_MAP[b->piecemap[i]] == "Q") move_count += queen_moves (b, moves+move_count, i);
-            else if (PIECE_MAP[b->piecemap[i]] == "K") move_count += king_moves  (b, moves+move_count, i);
+    b->piecemap[m->main->to] = m->main->on_from;
+    b->piecemap[m->main->from] = NO_PIECE;
+
+    if (m->alt != NULL) {
+        b->piecemap[m->alt->to] = m->alt->on_from;
+        if (m->alt->from >= 0 && m->alt->from < 64) {
+            b->piecemap[m->alt->from] = NO_PIECE;
         }
     }
-    printf("\nTotal Moves: %i\n", move_count);
-
-    for (i = 0; i < move_count; i++) {
-        if (moves[i] != NULL)
-        reprMove(*(moves+i));
-    }
-        
-
-} 
-
-/* Does a board have the same side's piece in sq1 and sq2 */
-int same_team(Board *b, int sq1, int sq2) {
-    return (is_black[b->piecemap[sq1]] && is_black[b->piecemap[sq2]]) ||
-        (is_white[b->piecemap[sq1]] && is_white[b->piecemap[sq2]]);
 }
+
+void reverseMove(Board *b, Move *m)
+{
+    b->piecemap[m->main->from] = m->main->on_from;
+    b->piecemap[m->main->to] = m->main->on_to;
+    if (m->alt != NULL) {
+        b->piecemap[m->alt->to] = m->alt->on_to;
+        b->piecemap[m->alt->from] = m->alt->on_from;
+    }
+}
+

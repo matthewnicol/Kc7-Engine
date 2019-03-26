@@ -2,7 +2,7 @@ static int king_differentials[][2] = {
     {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, {0, 1}, {0, -1}, {1, 0}, {-1, 0}
 };
 
-int king_moves(Board *b, Move **moves, int square) 
+int king_moves(Piece piecemap[64], int square, Player turn, Move **moves) 
 {
     int i, sq2;
     int k = 0;
@@ -16,10 +16,10 @@ int king_moves(Board *b, Move **moves, int square)
         if (file == "h" && FILE_MAP[sq2] == "a") continue;
         file = FILE_MAP[sq2];
 
-        if (is_black[b->piecemap[square]] && is_black[b->piecemap[sq2]]) continue;
-        if (is_white[b->piecemap[square]] && is_white[b->piecemap[sq2]]) continue;
+        if (is_black[piecemap[square]] && is_black[piecemap[sq2]]) continue;
+        if (is_white[piecemap[square]] && is_white[piecemap[sq2]]) continue;
         moves[k++] = makeMove(
-                makePieceMovement(square, sq2, b->piecemap[square], b->piecemap[sq2]),
+                makePieceMovement(square, sq2, piecemap[square], piecemap[sq2]),
                 blankPieceMovement());
     }
     return k;

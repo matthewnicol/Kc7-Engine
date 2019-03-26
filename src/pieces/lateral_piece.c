@@ -1,4 +1,4 @@
-int queen_moves(Board *b, Move **moves, int square) 
+int lateral_mover(Piece piecemap[64], int square, Player turn, int updown, int diagonal, Move **moves) 
 {
     int i, j;
     int k=0;
@@ -10,6 +10,8 @@ int queen_moves(Board *b, Move **moves, int square)
             square + (8*i), square + (8*i), square - (8*i), square - (8*i)
         };
         for (j = 0; j < 8; j++) {
+            if (!updown && j > 3) continue;
+            if (!diagonal && j < 4) continue;
             if (blockaded[j] || !VALID(differentials[j])) continue;  
 
             // Don't jump off the board
@@ -17,13 +19,13 @@ int queen_moves(Board *b, Move **moves, int square)
             if (files[j] == "a" && FILE_MAP[differentials[j]] == "h") { blockaded[j] = 1; continue; }
             files[j] = FILE_MAP[differentials[j]];
 
-            blockaded[j] = b->piecemap[differentials[j]] != NO_PIECE;
+            blockaded[j] = piecemap[differentials[j]] != NO_PIECE;
             if (blockaded[j]) {
-                if (is_white[b->piecemap[differentials[j]]] && is_white[b->piecemap[square]]) continue;
-                if (is_black[b->piecemap[differentials[j]]] && is_black[b->piecemap[square]]) continue;
+                if (is_white[piecemap[differentials[j]]] && is_white[piecemap[square]]) continue;
+                if (is_black[piecemap[differentials[j]]] && is_black[piecemap[square]]) continue;
             }
             moves[k++] = makeMove(
-                    makePieceMovement(square, differentials[j], b->piecemap[square], b->piecemap[differentials[j]]),
+                    makePieceMovement(square, differentials[j], piecemap[square], piecemap[differentials[j]]),
                     blankPieceMovement());
         }
     }
