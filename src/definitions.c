@@ -2,8 +2,10 @@ typedef enum { PLAYER_NONE, PLAYER_WHITE, PLAYER_BLACK } Player, Turn;
 
 typedef enum { 
     NO_PIECE,
-    BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING, BLACK_EP_PAWN, 
-    WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN, WHITE_KING, WHITE_EP_PAWN
+    BLACK_PAWN, BLACK_EP_PAWN, BLACK_STILL_ROOK, BLACK_MOVED_ROOK, BLACK_STILL_KING, BLACK_MOVED_KING,
+    BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN,
+    WHITE_PAWN, WHITE_EP_PAWN, WHITE_STILL_ROOK, WHITE_MOVED_ROOK, WHITE_STILL_KING, WHITE_MOVED_KING,
+    WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING 
 } Piece;
 
 typedef struct {
@@ -80,20 +82,33 @@ static int RANK_MAP[] = {
     1, 1, 1, 1, 1, 1, 1, 1
 };
 
-static char *COLOUR_PIECE_MAP[] = { "*", "P", "N", "B", "R", "Q", "K", "P", "p", "n", "b", "r", "q", "k", "p" };
+static char *COLOUR_PIECE_MAP[] = { 
+    "*", 
+    "P", "P", "R", "R", "K", "K", "N", "B", "Q", 
+    "p", "p", "r", "r", "k", "k", "n", "b", "q"
+};
 
-static char *TEXT_PIECE_MAP[] = { "", "", "N", "B", "R", "Q", "K", "", "", "N", "B", "R", "Q", "K", "" };
-static char *PIECE_MAP[] = { "", "P", "N", "B", "R", "Q", "K", "P", "P", "N", "B", "R", "Q", "K", "" };
+static char *TEXT_PIECE_MAP[] = { 
+    "", 
+    "", "", "R", "R", "K", "K", "N", "B", "Q", 
+    "", "", "R", "R", "K", "K", "N", "B", "Q"
+};
 
-static int is_king[] =   {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0};
-static int is_queen[] =  {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0};
-static int is_rook[] =   {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
-static int is_bishop[] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
-static int is_knight[] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
-static int is_pawn[] =   {0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1};
-static int is_empty[] =  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static int is_black[] =  {0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
-static int is_white[] =  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1};
+static char *PIECE_MAP[] = { 
+    "", 
+    "P", "P", "R", "R", "K", "K", "N", "B", "Q", 
+    "P", "P", "R", "R", "K", "K", "N", "B", "Q"
+};
+
+static int is_king[] =   {0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0};
+static int is_queen[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+static int is_rook[] =   {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
+static int is_bishop[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
+static int is_knight[] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0};
+static int is_pawn[] =   {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0};
+static int is_empty[] =  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static int is_black[] =  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static int is_white[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 /* Does a board have the same side's piece in sq1 and sq2 */
 int same_team(Board *b, int sq1, int sq2) {

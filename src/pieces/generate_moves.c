@@ -65,7 +65,8 @@ int trim_invalid_positions(Board *b, Move **m, int candidates)
     for (i = 0; i < candidates; i++) {
         applyMove(b, *(m+i));
         for (sq = 0; sq < 64; sq++) {
-            if ((b->piecemap[sq] == WHITE_KING && b->turn == PLAYER_WHITE) || (b->piecemap[sq] == BLACK_KING && b->turn == PLAYER_BLACK)) {
+            if ((COLOUR_PIECE_MAP[b->piecemap[sq]] == "k" && b->turn == PLAYER_WHITE) 
+                    || (COLOUR_PIECE_MAP[b->piecemap[sq]] == "K" && b->turn == PLAYER_BLACK)) {
                 if (!can_opponent_attack(b, sq)) *(m + k++) = *(m + i);
                 break;
             }
