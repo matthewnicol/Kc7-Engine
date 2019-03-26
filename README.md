@@ -1,5 +1,4 @@
-Chess Engine C Study Project
+Kc7 Engine
 
-Aims:
--Full chess board representation
--At least naive decision making
+c language study project - focuses: memory management, search algorithms.
+at this stage a chess engine that makes random moves and doesn't yet understand checkmate/stalemate
