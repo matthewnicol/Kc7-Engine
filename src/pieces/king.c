@@ -7,6 +7,7 @@ int king_moves(Piece piecemap[64], int square, Player turn, Move **moves)
     int i, sq2;
     int k = 0;
     char *file = FILE_MAP[square];
+    Piece moved = turn ? BLACK_MOVED_KING : WHITE_MOVED_KING;
     for (i = 0; i < 8; i++) {
         int sq2 = square + king_differentials[i][0]*8 + knight_differentials[i][1];
         if (!VALID(sq2)) continue;
