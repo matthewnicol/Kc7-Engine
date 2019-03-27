@@ -1,3 +1,4 @@
+#include "locate.c"
 #include "lateral_piece.c"
 #include "pawn.c"
 #include "knight.c"
