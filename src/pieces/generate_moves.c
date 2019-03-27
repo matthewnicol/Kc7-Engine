@@ -13,40 +13,13 @@ int get_piece_moves(Piece piecemap[64], int square, Player turn, Move **moves)
     if (PIECE_MAP[piecemap[square]] == "K") return king_moves(piecemap, square, turn, moves);
 }
 
-void validMoves(Board *b) /* List all valid moves on a current board */
-{
-    int move_count = 0;
-    int i;
-    Move **moves = malloc(sizeof(Move*)*60);
-    Board *bscratch = copy_board(b);
-    for (i = 0; i < 64; i++) {
-        move_count += get_piece_moves(b->piecemap, i, b->turn, (moves + move_count));
-    }
-
-    move_count = trim_invalid_positions(bscratch, moves, move_count);
-    free(bscratch);
-    
-    printf("\nTotal Moves: %i\n", move_count);
-
-    i = rand() % move_count;
-    applyMove(b, *(moves+i));
-    reprMove(*(moves+i));
-    printf("\n");
-    free(moves);
-    b->turn = b->turn == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
-
-} 
-
-
-int can_opponent_attack(Board *b, int square) {
-    int move_count = 0;
-    int i, j;
+int square_is_attacked(Piece piecemap[64], int square, Player attacker) {
+    int i, j, move_count = 0;
     Move **move_holder = malloc(sizeof(Move*)*20);
     for (i = 0; i < 64; i++) {
-        move_count = get_piece_moves(b->piecemap, i, b->turn, move_holder);
+        move_count = get_piece_moves(piecemap, i, attacker, move_holder);
         for (j = 0; j < move_count; j++) {
-            Move *m = *(move_holder + j);
-            if (m->main->to == square) {
+            if ((*(move_holder + j))->main->to == square) {
                 free(move_holder);
                 return 1;
             }
@@ -57,20 +30,14 @@ int can_opponent_attack(Board *b, int square) {
 }
         
 
-int trim_invalid_positions(Board *b, Move **m, int candidates)
+int trim_invalid_moves(Board *b, Move **m, int candidates)
 {
-    int i, sq, kingsq, k = 0;
-    b->turn = b->turn == PLAYER_WHITE? PLAYER_BLACK : PLAYER_WHITE;
-
+    int i, sq, k = 0;
+    b->turn = !b->turn; 
     for (i = 0; i < candidates; i++) {
         applyMove(b, *(m+i));
-        for (sq = 0; sq < 64; sq++) {
-            if ((COLOUR_PIECE_MAP[b->piecemap[sq]] == "k" && b->turn == PLAYER_WHITE) 
-                    || (COLOUR_PIECE_MAP[b->piecemap[sq]] == "K" && b->turn == PLAYER_BLACK)) {
-                if (!can_opponent_attack(b, sq)) *(m + k++) = *(m + i);
-                break;
-            }
-        }
+        if (!square_is_attacked(b->piecemap, locate_king(b->piecemap, !(b->turn)), b->turn)) 
+            *(m + k++) = *(m + i);
         reverseMove(b, *(m+i));
     }
     return k;

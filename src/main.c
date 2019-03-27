@@ -12,9 +12,9 @@ int main ()
     standard(&b);
     printf("Turn %d\n", b.turn);
     for (i = 0; i < 20; i++) {
-    printBoard(&b);
-    sleep(8);
-    validMoves(&b);
+        printBoard(&b);
+        sleep(2);
+        valid_moves(&b);
     }
     exit(0);
 }
