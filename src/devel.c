@@ -6,6 +6,14 @@ char reprPiece(int i) {
 void reprMove(Move *m) {
     printf("\t");
    
+    if (is_king[m->main->on_from]) {
+        if (m->main->from == 60 && m->main->to == 62) printf("0-0");
+        if (m->main->from == 60 && m->main->to == 58) printf("0-0-0");
+        if (m->main->from == 4 && m->main->to == 6) printf("0-0");
+        if (m->main->from == 4 && m->main->to == 2) printf("0-0-0");
+        return;
+    }
+
     if (is_pawn[m->main->on_from]) printf(FILE_MAP[m->main->to]); 
     else printf(PIECE_MAP[m->main->on_from]);
 
