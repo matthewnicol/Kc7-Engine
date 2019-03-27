@@ -13,10 +13,18 @@ void valid_moves(Board *b) /* List all valid moves on a board */
     printf("\nTotal Moves: %i\n", move_count);
 
     if (move_count > 0) {
+        printf("Available Moves: \n");
+        int s = 0;
+        for (i = 0; i < move_count; i++) {
+            if (++s == 5) { printf("\n"); s = 0;}
+            reprMove(*(moves + i));
+        }
+        printf("\n\n");
         i = rand() % move_count;
         applyMove(b, *(moves+i));
+        printf("My choice: ");
         reprMove(*(moves+i));
-        printf("\n");
+        printf("\n\n-------------------------------------------------\n");
     };
     free(moves);
     b->turn = b->turn == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
