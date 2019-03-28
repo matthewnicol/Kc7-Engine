@@ -2,10 +2,9 @@ int pawn_moves(Piece piecemap[64], int square, Player turn, Move **moves)
 {
     int i = 0;
     int direction = turn == PLAYER_BLACK ? 1 : -1;
-    int two_from = turn == PLAYER_BLACK ? 7 : 2;
     Piece ep_target = turn == PLAYER_BLACK? WHITE_EP_PAWN : BLACK_EP_PAWN;
 
-    int twosquares, blockaded2, blockaded1, ep_left, ep_right;
+    int  ep_left, ep_right;
 
     ep_left = piecemap[square+(-1*direction)] == ep_target && RANK_MAP[square] == RANK_MAP[square+(-1*direction)];
     ep_right = piecemap[square+(1*direction)] == ep_target && RANK_MAP[square] == RANK_MAP[square+(1*direction)];
