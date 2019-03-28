@@ -13,6 +13,18 @@ PieceMovement* makePieceMovement (int from, int to, Piece on_from, Piece on_to)
     return p;
 }
 
+Move *makeSimpleMove(int from, int to, Piece on_from, Piece on_to)
+{
+    Move *m = malloc(sizeof(Move));
+    m->main = malloc(sizeof(PieceMovement));
+    (*(m->main)).from = from;
+    (*(m->main)).to = to;
+    (*(m->main)).on_from = on_from;
+    (*(m->main)).on_to = on_to;
+    m->alt = NULL;
+    return m;
+}
+
 Move *makeMove (PieceMovement *main, PieceMovement *alt)
 {
     Move *m = malloc(sizeof(Move));
