@@ -20,6 +20,7 @@ void applyMove(Board*, Move*);
 PieceMovement *blankPieceMovement(void);
 PieceMovement *makePieceMovement(int, int, Piece, Piece);
 Move *makeMove(PieceMovement*, PieceMovement*);
+Move *makeSimpleMove(int, int, Piece, Piece);
 int same_team(Piece[64], int, int);
 
 #include "board.c"
