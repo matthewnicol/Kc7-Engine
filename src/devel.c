@@ -1,6 +1,6 @@
 
 char reprPiece(int i) {
-    return *COLOUR_PIECE_MAP[i];
+    return COLOUR_PIECE_MAP[i];
 }
 
 void reprMove(Move *m) {
@@ -13,17 +13,17 @@ void reprMove(Move *m) {
         if (m->main->from == 4 && m->main->to == 2) { printf("0-0-0"); return; }
     }
 
-    if (is_pawn[m->main->on_from]) printf(FILE_MAP[m->main->to]); 
-    else printf(PIECE_MAP[m->main->on_from]);
+    if (is_pawn[m->main->on_from]) printf("%c", FILE_MAP[m->main->to]); 
+    else printf("%c", PIECE_MAP[m->main->on_from]);
 
     if (!is_empty[m->main->on_to]) printf("x");
     if (is_pawn[m->main->on_from] && FILE_MAP[m->main->from] != FILE_MAP[m->main->to]) {
         printf("x");
-        printf(FILE_MAP[m->main->to]);
+        printf("%c", FILE_MAP[m->main->to]);
     }
     
-    if (!is_pawn[m->main->on_from]) printf(FILE_MAP[m->main->to]);
-    printf(RANK_MAP_S[m->main->to]);
+    if (!is_pawn[m->main->on_from]) printf("%c", FILE_MAP[m->main->to]);
+    printf("%c", RANK_MAP_S[m->main->to]);
 }
 
 void printBoard(Board *b)

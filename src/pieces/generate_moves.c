@@ -5,12 +5,12 @@ int get_piece_moves(Piece piecemap[64], int square, Player turn, Move **moves)
     if (turn == PLAYER_WHITE && is_black[piecemap[square]]) return 0;
     if (turn == PLAYER_BLACK && is_white[piecemap[square]]) return 0;
 
-    if (PIECE_MAP[piecemap[square]] == "P") return pawn_moves(piecemap, square, turn, moves);
-    if (PIECE_MAP[piecemap[square]] == "N") return knight_moves(piecemap, square, turn, moves);
-    if (PIECE_MAP[piecemap[square]] == "B") return bishop_moves(piecemap, square, turn, moves);
-    if (PIECE_MAP[piecemap[square]] == "R") return rook_moves(piecemap, square, turn, moves);
-    if (PIECE_MAP[piecemap[square]] == "Q") return queen_moves(piecemap, square, turn, moves);
-    if (PIECE_MAP[piecemap[square]] == "K") return king_moves(piecemap, square, turn, moves);
+    if (PIECE_MAP[piecemap[square]] == 'P') return pawn_moves(piecemap, square, turn, moves);
+    if (PIECE_MAP[piecemap[square]] == 'N') return knight_moves(piecemap, square, turn, moves);
+    if (PIECE_MAP[piecemap[square]] == 'B') return bishop_moves(piecemap, square, turn, moves);
+    if (PIECE_MAP[piecemap[square]] == 'R') return rook_moves(piecemap, square, turn, moves);
+    if (PIECE_MAP[piecemap[square]] == 'Q') return queen_moves(piecemap, square, turn, moves);
+    if (PIECE_MAP[piecemap[square]] == 'K') return king_moves(piecemap, square, turn, moves);
 }
 
 int square_is_attacked(Piece piecemap[64], int square, Player attacker) {

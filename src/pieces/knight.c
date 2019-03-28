@@ -2,6 +2,9 @@ static int knight_differentials[][2] = {
     {1, 2}, {1, -2}, {-1, -2}, {-1, 2}, {2, 1}, {2, -1}, {-2, -1}, {-2, 1}
 };
 
+static char invalid_knight_files[][2] = {{'a', 'g'}, {'a', 'h'}, {'b', 'h'}, {'h', 'a'}, {'h', 'b'}, {'g', 'a'},
+    {'\0', '\0'}};
+
 int knight_moves(Piece piecemap[64], int square, Player turn, Move **moves) 
 {
     int i, k = 0;
@@ -9,19 +12,11 @@ int knight_moves(Piece piecemap[64], int square, Player turn, Move **moves)
         int sq2 = square + (knight_differentials[i][0]*8) + knight_differentials[i][1];
 
         // Make sure square is on the board & we're not already in it
-        if (!VALID(sq2) || same_team(piecemap, square, sq2)) continue;
+        if (!VALID(sq2) 
+                || same_team(piecemap, square, sq2) 
+                || tuple_matches(FILE_MAP[square], FILE_MAP[sq2], invalid_knight_files)) continue;
 
-        // Don't jump off the board
-        if (FILE_MAP[square] == "a" && (FILE_MAP[sq2] == "g" || FILE_MAP[sq2] == "h")) continue;
-        if (FILE_MAP[square] == "b" && FILE_MAP[sq2] == "h") continue;
-        if (FILE_MAP[square] == "h" && (FILE_MAP[sq2] == "a" || FILE_MAP[sq2] == "b")) continue;
-        if (FILE_MAP[square] == "g" && FILE_MAP[sq2] == "a") continue;
-
-        // Add move if all checks pass
-        moves[k++] = makeMove(
-            makePieceMovement(square, sq2, piecemap[square], piecemap[sq2]), 
-            blankPieceMovement()
-        );
+        moves[k++] = makeSimpleMove(square, sq2, piecemap[square], piecemap[sq2]); 
     }
     return k;
 }

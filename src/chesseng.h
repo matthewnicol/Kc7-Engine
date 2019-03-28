@@ -1,10 +1,11 @@
 #include "definitions.c"
 
-int isin(int t, int l[])
+int tuple_matches(char a, char b, char l[][2])
 {
-    int i, matches = 0;
-    for (i = 0; l[i] != t || (matches = 1); i++);
-    return matches;
+    int i;
+    for (i = 0; !(l[i][0] == '\0' && l[i][1] == '\0') && (l[i][0] != a && l[i][1] != b); i++);
+    return l[i][0] == a && l[i][1] == b;
+
 }
 
 // Board
