@@ -7,24 +7,16 @@ int pawn_moves(Piece piecemap[64], int square, Player turn, Move **moves)
 
     int twosquares, blockaded2, blockaded1, ep_left, ep_right;
 
-    blockaded1 = piecemap[square+(8*direction)]; 
-    twosquares = RANK_MAP[square] == two_from;
-    blockaded2 = blockaded1 || piecemap[square+(16*direction)];
     ep_left = piecemap[square+(-1*direction)] == ep_target && RANK_MAP[square] == RANK_MAP[square+(-1*direction)];
     ep_right = piecemap[square+(1*direction)] == ep_target && RANK_MAP[square] == RANK_MAP[square+(1*direction)];
 
     // One step moves
-    if (!blockaded1 && VALID(square+(8*direction))) 
-        moves[i++] = makeMove(
-                makePieceMovement(square, square+(8*direction), piecemap[square], NO_PIECE), 
-                blankPieceMovement()); 
-
+    if (!piecemap[square+(8*direction)] && VALID(square+(8*direction))) 
+        moves[i++] = makeSimpleMove(square, square+(8*direction), piecemap[square], NO_PIECE);
 
     // Two step moves
-    if (!blockaded2 && twosquares)
-        moves[i++] = makeMove(
-                makePieceMovement(square, square+(16*direction), piecemap[square], NO_PIECE), 
-                blankPieceMovement());
+    if (i && !piecemap[square+(16*direction)] && RANK_MAP[square] == (turn ? 7 : 2))
+        moves[i++] = makeSimpleMove(square, square+(16*direction), piecemap[square], NO_PIECE); 
 
     // En Passant to the Left
     if (ep_right && VALID(square+(9*direction))) 
