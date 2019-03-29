@@ -30,15 +30,16 @@ int square_is_attacked(Piece piecemap[64], int square, Player attacker) {
 }
         
 
-int trim_invalid_moves(Board *b, Move **m, int candidates)
+MoveSet trim_invalid_moves(Board *b, MoveSet m)
 {
     int i, sq, k = 0;
     b->turn = !b->turn; 
-    for (i = 0; i < candidates; i++) {
-        applyMove(b, *(m+i));
+    for (i = 0; i < m.count; i++) {
+        applyMove(b, *(m.moves+i));
         if (!square_is_attacked(b->piecemap, locate_king(b->piecemap, !(b->turn)), b->turn)) 
-            *(m + k++) = *(m + i);
-        reverseMove(b, *(m+i));
+            *(m.moves + k++) = *(m.moves + i);
+        reverseMove(b, *(m.moves+i));
     }
-    return k;
+    m.count = k;
+    return m;
 }

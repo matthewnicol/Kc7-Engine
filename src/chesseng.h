@@ -14,7 +14,7 @@ int can_opponent_attack(Board*, int);
 Board get_board(Turn t);
 void apply_move (Board *b, Move *m);
 void reverse_move(Board *b, Move *m);
-int trim_invalid_moves(Board*, Move**, int);
+MoveSet trim_invalid_moves(Board*, MoveSet);
 void standard (Board *b);
 Board* copy_board(Board*);
 void applyMove(Board*, Move*); 

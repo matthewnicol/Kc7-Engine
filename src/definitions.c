@@ -8,6 +8,10 @@ typedef enum {
     WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING 
 } Piece;
 
+typedef enum {
+    MAKE_RANDOM_MOVE, PROMPT_FOR_MOVE, FIND_BEST_MOVE
+} PositionStrategy;
+
 typedef struct {
     int from;       /* 0-64 -> The square we moved from */
     int to;         /* 0-64 -> The square we moved to */
@@ -26,6 +30,13 @@ typedef struct {
     int cur_move; 
     Move *moves[];
 } Board;
+
+// Bundle up count of moves with the actual moves
+typedef struct {
+    Move **moves;
+    int count;
+} MoveSet;
+
 
 #define VALID(X)         (X >= 0 && X < 64)
 

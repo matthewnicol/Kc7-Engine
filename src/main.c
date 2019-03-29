@@ -9,6 +9,7 @@
 int main ()
 {
     time_t t;
+    
     srand((unsigned) time(&t));
     int i;
     Board b = get_board(PLAYER_WHITE); 
@@ -16,7 +17,7 @@ int main ()
     printf("Turn %d\n", b.turn);
     for (i = 0; i < 20; i++) {
         printBoard(&b);
-        valid_moves(&b);
+        handle_position(MAKE_RANDOM_MOVE, &b);
     }
     exit(0);
 }
