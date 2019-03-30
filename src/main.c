@@ -12,7 +12,7 @@ int main ()
     
     srand((unsigned) time(&t));
     int i;
-    Board b = get_board(PLAYER_WHITE); 
+    Board b = get_board(); 
     standard(&b);
     printf("Turn %d\n", b.turn);
     for (i = 0; i < 20; i++) {

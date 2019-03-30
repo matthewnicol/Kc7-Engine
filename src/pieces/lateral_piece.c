@@ -1,5 +1,5 @@
 static char bad_filewise_increment[][2] = {{'a', 'h'}, {'h', 'a'}, {'\0', '\0'}};
-int lateral_mover(Piece piecemap[64], int square, Player turn, int updown, int diagonal, Move **moves) 
+int lateral_mover(Piece piecemap[64], int square, int updown, int diagonal, Move **moves) 
 {
     int i, j, k = 0;
     int blockaded[] = {0, 0, 0, 0, 0, 0, 0, 0};

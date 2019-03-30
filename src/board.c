@@ -18,7 +18,7 @@ void standard (Board *b)
     b->piecemap[60] = WHITE_STILL_KING;
 }
 
-Board get_board(Turn t)
+Board get_board()
 {
     Board *b = malloc(sizeof(Board) + sizeof(Move[20]));
 

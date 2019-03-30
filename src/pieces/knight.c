@@ -5,7 +5,7 @@ static int knight_differentials[][2] = {
 static char invalid_knight_files[][2] = {{'a', 'g'}, {'a', 'h'}, {'b', 'h'}, {'h', 'a'}, {'h', 'b'}, {'g', 'a'},
     {'\0', '\0'}};
 
-int knight_moves(Piece piecemap[64], int square, Player turn, Move **moves) 
+int knight_moves(Piece piecemap[64], int square, Move **moves) 
 {
     int i, k = 0;
     for (i = 0; i < 8; i++) {

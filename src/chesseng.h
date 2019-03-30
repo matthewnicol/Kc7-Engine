@@ -11,7 +11,7 @@ int tuple_matches(char a, char b, char l[][2])
 // Board
 void reverseMove(Board*, Move*);
 int can_opponent_attack(Board*, int);
-Board get_board(Turn t);
+Board get_board();
 void apply_move (Board *b, Move *m);
 void reverse_move(Board *b, Move *m);
 MoveSet trim_invalid_moves(Board*, MoveSet);

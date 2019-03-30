@@ -16,7 +16,7 @@ void reprMove(Move *m) {
     if (is_pawn[m->main->on_from]) printf("%c", FILE_MAP[m->main->to]); 
     else printf("%c", PIECE_MAP[m->main->on_from]);
 
-    if (!is_empty[m->main->on_to]) printf("x");
+    if (!m->main->on_to) printf("x");
     if (is_pawn[m->main->on_from] && FILE_MAP[m->main->from] != FILE_MAP[m->main->to]) {
         printf("x");
         printf("%c", FILE_MAP[m->main->to]);

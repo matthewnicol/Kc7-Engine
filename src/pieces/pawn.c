@@ -17,6 +17,15 @@ int pawn_moves(Piece piecemap[64], int square, Player turn, Move **moves)
     if (i && !piecemap[square+(16*direction)] && RANK_MAP[square] == (turn ? 7 : 2))
         moves[i++] = makeSimpleMove(square, square+(16*direction), piecemap[square], NO_PIECE); 
 
+    // Diagonal Capture
+    if (VALID(square+(9*direction)) && different_team(piecemap, square, square+(9*direction)))
+        moves[i++] = makeSimpleMove(square, square+(9*direction), piecemap[square], NO_PIECE); 
+    
+    // Diagonal Capture
+    if (VALID(square+(9*direction)) && different_team(piecemap, square, square+(7*direction)))
+        moves[i++] = makeSimpleMove(square, square+(7*direction), piecemap[square], piecemap[7*direction]); 
+
+
     // En Passant to the Left
     if (ep_right && VALID(square+(9*direction))) 
             moves[i++] = makeMove(
