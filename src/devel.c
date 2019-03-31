@@ -13,17 +13,18 @@ void reprMove(Move *m) {
         if (m->main->from == 4 && m->main->to == 2) { printf("0-0-0"); return; }
     }
 
-    if (is_pawn[m->main->on_from]) printf("%c", FILE_MAP[m->main->to]); 
-    else printf("%c", PIECE_MAP[m->main->on_from]);
-
-    if (!m->main->on_to) printf("x");
-    if (is_pawn[m->main->on_from] && FILE_MAP[m->main->from] != FILE_MAP[m->main->to]) {
-        printf("x");
-        printf("%c", FILE_MAP[m->main->to]);
+    if (is_pawn[m->main->on_from]) {
+        if (FILE_MAP[m->main->to] != FILE_MAP[m->main->from]) {
+            printf("%cx%c%i", FILE_MAP[m->main->from], FILE_MAP[m->main->to], RANK_MAP[m->main->to]); 
+        } else printf("%c%i", FILE_MAP[m->main->on_from], RANK_MAP[m->main->to]);
+        return;
     }
-    
-    if (!is_pawn[m->main->on_from]) printf("%c", FILE_MAP[m->main->to]);
-    printf("%c", RANK_MAP_S[m->main->to]);
+    printf("%c%s%c%i", 
+            PIECE_MAP[m->main->on_from], 
+            PIECE_MAP[m->main->on_to]? "x" : "",
+            FILE_MAP[m->main->to],
+            RANK_MAP[m->main->to]
+            );
 }
 
 void printBoard(Board *b)
