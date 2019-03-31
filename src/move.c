@@ -5,6 +5,10 @@ PieceMovement* blankPieceMovement ()
 
 PieceMovement* makePieceMovement (int from, int to, Piece on_from, Piece on_to)
 {
+    assert(from >= 0 && from <= 63);
+    assert(to >= 0 && to <= 63);
+    assert(on_from < 22);
+    assert(on_to < 22);
     PieceMovement *p = malloc(sizeof(PieceMovement));
     (*p).from = from;
     (*p).to = to;
@@ -17,6 +21,10 @@ Move *makeSimpleMove(int from, int to, Piece on_from, Piece on_to)
 {
     Move *m = malloc(sizeof(Move));
     m->main = malloc(sizeof(PieceMovement));
+    assert(from >= 0 && from <= 63);
+    assert(to >= 0 && to <= 63);
+    assert(on_from < 22);
+    assert(on_to < 22);
     (*(m->main)).from = from;
     (*(m->main)).to = to;
     (*(m->main)).on_from = on_from;

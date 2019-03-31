@@ -1,3 +1,9 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <time.h>
+#include <assert.h>
 #include "definitions.c"
 
 int tuple_matches(char a, char b, char l[][2])

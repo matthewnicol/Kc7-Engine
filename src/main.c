@@ -1,9 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include "chesseng.h"
-#include <time.h>
 
 /* Test configuration */
 int main ()
