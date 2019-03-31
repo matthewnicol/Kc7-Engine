@@ -3,7 +3,7 @@ int locate_king(Piece piecemap[64], Player colour)
     int i;
     for (i = 0; i < 64; i++) {
         if (is_white[piecemap[i]] && is_king[piecemap[i]] && colour == PLAYER_WHITE) return i;
-        if (is_black[piecemap[i]] && is_black[piecemap[i]] && colour == PLAYER_BLACK) return i;
+        if (is_black[piecemap[i]] && is_king[piecemap[i]] && colour == PLAYER_BLACK) return i;
     }
 
     return -1;
