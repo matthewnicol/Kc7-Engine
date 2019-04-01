@@ -1,5 +1,6 @@
-/* Get standard board configuration */
-void standard (Board *b) 
+/* Functions for manipulating boards */
+
+void standard (Board *b) /* Get standard board configuration */
 {
     int i;
     for (i = 0; i < 8; i++) {
@@ -40,4 +41,58 @@ Board *copy_board(Board *b)
     for (i = 0; i < 64; i++) b2->piecemap[i] = b->piecemap[i];
     b2->turn = b->turn;
     return b2;
+}
+
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#define SETSQ(P) b->piecemap[sq++] = P
+
+void FEN(Board *b, char *fen) /* Build a board from a FEN position */
+{
+    char cur;
+    int i, sq = 0;
+
+    for (i = 0; fen[i] != ' '; i++) {
+        cur = (char)fen[i];
+        switch (cur) {
+            case '8': SETSQ(NO_PIECE);
+            case '7': SETSQ(NO_PIECE); 
+            case '6': SETSQ(NO_PIECE); 
+            case '5': SETSQ(NO_PIECE); 
+            case '4': SETSQ(NO_PIECE); 
+            case '3': SETSQ(NO_PIECE); 
+            case '2': SETSQ(NO_PIECE); 
+            case '1': SETSQ(NO_PIECE); break;
+            case 'p': SETSQ(BLACK_PAWN); break;
+            case 'P': SETSQ(WHITE_PAWN); break;
+            case 'n': SETSQ(BLACK_KNIGHT); break;
+            case 'N': SETSQ(WHITE_KNIGHT); break;
+            case 'b': SETSQ(BLACK_BISHOP); break;
+            case 'B': SETSQ(WHITE_BISHOP); break;
+            case 'r': SETSQ(BLACK_MOVED_ROOK); break;
+            case 'R': SETSQ(WHITE_MOVED_ROOK); break;
+            case 'q': SETSQ(BLACK_QUEEN); break;
+            case 'Q': SETSQ(WHITE_QUEEN); break;
+            case 'k': SETSQ(BLACK_MOVED_KING); break;
+            case 'K': SETSQ(WHITE_MOVED_KING); break;
+        }
+        
+        b->turn = ((char)fen[++i] == 'b') ? PLAYER_BLACK : PLAYER_WHITE;
+        i++;
+
+        while ((cur = fen[++i]) != ' ') {
+            if (cur == 'K') {
+                b->piecemap[60] = WHITE_STILL_KING;
+                b->piecemap[63] = WHITE_STILL_ROOK;
+            } else if (cur == 'Q') {
+                b->piecemap[60] = WHITE_STILL_KING;
+                b->piecemap[56] = WHITE_STILL_ROOK;
+            } else if (cur == 'k') {
+                b->piecemap[3] = BLACK_STILL_KING;
+                b->piecemap[7] = BLACK_STILL_ROOK;
+            } else if (cur == 'q') {
+                b->piecemap[3] = BLACK_STILL_KING;
+                b->piecemap[0] = BLACK_STILL_ROOK;
+            }
+        }
+    }
 }
