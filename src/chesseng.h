@@ -30,6 +30,8 @@ Move *makeMove(PieceMovement*, PieceMovement*);
 Move *makeSimpleMove(int, int, Piece, Piece);
 int same_team(Piece[64], int, int);
 
+int castling_available(PieceMap, int, Turn);
+
 #include "board.c"
 #include "devel.c"
 #include "pieces/pieces.h"

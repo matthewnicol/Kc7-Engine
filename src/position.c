@@ -1,3 +1,5 @@
+/* Functions for getting information about positions */
+
 MoveSet valid_moves(Board *b) /* List all valid moves on a board */
 {
     int i;
@@ -11,35 +13,22 @@ MoveSet valid_moves(Board *b) /* List all valid moves on a board */
     mset = trim_invalid_moves(bscratch, mset);
     free(bscratch);
     return mset;
-
-//    if (move_count > 0) {
-//        printf("Available Moves: \n");
-//        for (i = 0; i < move_count; i++) {
-//            reprMove(*(moves + i));
-//            if (i % 5 == 0) printf("\n");
-//        }
-//        printf("\n\n");
-//        i = rand() % move_count;
-//        applyMove(b, *(moves+i));
-//        printf("My choice: ");
-//        reprMove(*(moves+i));
-//        printf("\n\n-------------------------------------------------\n");
-//        sleep(2);
-//    };
-//    free(moves);
-//    b->turn = b->turn == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
-
 } 
 
 int is_checkmate(Board *b, MoveSet mset)
 {
-    return *(mset.moves+0) == NULL 
+    // No valid moves left
+    return mset.count == 0 
+        // King is attacked
         && square_is_attacked(b->piecemap, locate_king(b->piecemap, b->turn), !b->turn);
 }
 
 int is_stalemate(Board *b, MoveSet mset)
 {
-    return *(mset.moves+0) == NULL && !is_checkmate(b, mset);
+    // No valid moves left
+    return mset.count == 0
+        // But king is not attacked
+        && !is_checkmate(b, mset);
 }
 
 int handle_position(PositionStrategy strat, Board *b) 
@@ -65,4 +54,15 @@ int handle_position(PositionStrategy strat, Board *b)
         }
     }
     return 0;
+}
+
+
+int castling_available(PieceMap p, int kingside, Turn t) /* Can the player castle in the current position */
+{
+    int ln = t? 0 : 55;
+    Piece r = t? BLACK_STILL_ROOK : WHITE_STILL_ROOK;
+    Piece k = t? BLACK_STILL_KING : WHITE_STILL_KING;
+    return (p[ln+4] == k) 
+        && (  (kingside && p[ln+7] == r && !p[ln+6] && !p[ln+5]) 
+           || (!kingside && p[ln] == r && !p[ln+1] && !p[ln+2] && !p[ln+3]));
 }
