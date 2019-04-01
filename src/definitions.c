@@ -8,6 +8,8 @@ typedef enum {
     WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING 
 } Piece;
 
+typedef Piece PieceMap[64];
+
 typedef enum {
     MAKE_RANDOM_MOVE, PROMPT_FOR_MOVE, FIND_BEST_MOVE
 } PositionStrategy;
@@ -64,8 +66,8 @@ static int RANK_MAP[] = {
 
 static char COLOUR_PIECE_MAP[] = { 
     '*', 
-    'P', 'P', 'R', 'R', 'K', 'K', 'N', 'B', 'Q', 
-    'p', 'p', 'r', 'r', 'k', 'k', 'n', 'b', 'q'
+    'p', 'p', 'r', 'r', 'k', 'k', 'n', 'b', 'q', 
+    'P', 'P', 'R', 'R', 'K', 'K', 'N', 'B', 'Q'
 };
 
 static char PIECE_MAP[] = { 
@@ -85,9 +87,13 @@ static int is_black[] =  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
 static int is_white[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 /* Does a board have the same side's piece in sq1 and sq2 */
-int same_team(Piece p[64], int sq1, int sq2) {
+int same_team(Piece p[64], int sq1, int sq2) 
+{
     return (is_black[p[sq1]] && is_black[p[sq2]]) || (is_white[p[sq1]] && is_white[p[sq2]]);
 }
-int different_team(Piece p[64], int sq1, int sq2) {
+
+/* Does a board have opponent pieces in sq1 and sq2? */
+int different_team(Piece p[64], int sq1, int sq2) 
+{
     return (is_black[p[sq1]] && is_white[p[sq2]]) || (is_white[p[sq1]] && is_black[p[sq2]]);
 }
