@@ -1,6 +1,8 @@
-/* Functions for manipulating boards */
+/* Functions for creating and manipulating boards */
 
-void standard (Board *b) /* Get standard board configuration */
+/* Get standard board configuration */
+
+void standard (Board *b) 
 {
     int i;
     for (i = 0; i < 8; i++) {
@@ -19,6 +21,8 @@ void standard (Board *b) /* Get standard board configuration */
     b->piecemap[60] = WHITE_STILL_KING;
 }
 
+/* Make and return a new board. */
+
 Board get_board()
 {
     Board *b = malloc(sizeof(Board) + sizeof(Move[20]));
@@ -34,6 +38,8 @@ Board get_board()
     return *b;
 }
 
+/* Duplicate an existing board. */
+
 Board *copy_board(Board *b)
 {
     Board *b2 = malloc(sizeof(Board));
@@ -46,7 +52,9 @@ Board *copy_board(Board *b)
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #define SETSQ(P)      b->piecemap[sq++] = P
 
-void FEN(Board *b, char *fen) /* Build a board from a FEN position */
+/* Build a board from a FEN representation */
+
+void FEN(Board *b, char *fen) 
 {
     char cur;
     int i, sq = 0;
