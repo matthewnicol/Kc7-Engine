@@ -9,16 +9,16 @@ void standard (Board *b)
         b->piecemap[i+8] = BLACK_PAWN;
         b->piecemap[63-8-i] = WHITE_PAWN;
     }
-    b->piecemap[0] = b->piecemap[7] = BLACK_STILL_ROOK;
+    b->piecemap[0] = b->piecemap[7] = BLACK_CASTLING_ROOK;
     b->piecemap[1] = b->piecemap[6] = BLACK_KNIGHT;
     b->piecemap[2] = b->piecemap[5] = BLACK_BISHOP;
-    b->piecemap[63-0] = b->piecemap[63-7] = WHITE_STILL_ROOK;
+    b->piecemap[63-0] = b->piecemap[63-7] = WHITE_CASTLING_ROOK;
     b->piecemap[63-1] = b->piecemap[63-6] = WHITE_KNIGHT;
     b->piecemap[63-2] = b->piecemap[63-5] = WHITE_BISHOP;
     b->piecemap[4] = BLACK_QUEEN;
     b->piecemap[59] = WHITE_QUEEN;
-    b->piecemap[3] = BLACK_STILL_KING;
-    b->piecemap[60] = WHITE_STILL_KING;
+    b->piecemap[3] = BLACK_CASTLING_KING;
+    b->piecemap[60] = WHITE_CASTLING_KING;
 }
 
 /* Make and return a new board. */
@@ -76,12 +76,12 @@ void FEN(Board *b, char *fen)
             case 'N': SETSQ(WHITE_KNIGHT); break;
             case 'b': SETSQ(BLACK_BISHOP); break;
             case 'B': SETSQ(WHITE_BISHOP); break;
-            case 'r': SETSQ(BLACK_MOVED_ROOK); break;
-            case 'R': SETSQ(WHITE_MOVED_ROOK); break;
+            case 'r': SETSQ(BLACK_ROOK); break;
+            case 'R': SETSQ(WHITE_ROOK); break;
             case 'q': SETSQ(BLACK_QUEEN); break;
             case 'Q': SETSQ(WHITE_QUEEN); break;
-            case 'k': SETSQ(BLACK_MOVED_KING); break;
-            case 'K': SETSQ(WHITE_MOVED_KING); break;
+            case 'k': SETSQ(BLACK_KING); break;
+            case 'K': SETSQ(WHITE_KING); break;
             case '/': break;
         }
     }
@@ -89,17 +89,17 @@ void FEN(Board *b, char *fen)
 
     while ((cur = (char)fen[++i]) != ' ') {
         if (cur == 'K') {
-            b->piecemap[60] = WHITE_STILL_KING;
-            b->piecemap[63] = WHITE_STILL_ROOK;
+            b->piecemap[60] = WHITE_CASTLING_KING;
+            b->piecemap[63] = WHITE_CASTLING_ROOK;
         } else if (cur == 'Q') {
-            b->piecemap[60] = WHITE_STILL_KING;
-            b->piecemap[56] = WHITE_STILL_ROOK;
+            b->piecemap[60] = WHITE_CASTLING_KING;
+            b->piecemap[56] = WHITE_CASTLING_ROOK;
         } else if (cur == 'k') {
-            b->piecemap[3] = BLACK_STILL_KING;
-            b->piecemap[7] = BLACK_STILL_ROOK;
+            b->piecemap[3] = BLACK_CASTLING_KING;
+            b->piecemap[7] = BLACK_CASTLING_ROOK;
         } else if (cur == 'q') {
-            b->piecemap[3] = BLACK_STILL_KING;
-            b->piecemap[0] = BLACK_STILL_ROOK;
+            b->piecemap[3] = BLACK_CASTLING_KING;
+            b->piecemap[0] = BLACK_CASTLING_ROOK;
         }
     }
 }

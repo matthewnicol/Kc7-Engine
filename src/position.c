@@ -61,8 +61,8 @@ int handle_position(PositionStrategy strat, Board *b)
 int castling_available(PieceMap p, int kingside, Turn t) /* Can the player castle in the current position */
 {
     int ln = t? 0 : 55;
-    Piece r = t? BLACK_STILL_ROOK : WHITE_STILL_ROOK;
-    Piece k = t? BLACK_STILL_KING : WHITE_STILL_KING;
+    Piece r = t? BLACK_CASTLING_ROOK : WHITE_CASTLING_ROOK;
+    Piece k = t? BLACK_CASTLING_KING : WHITE_CASTLING_KING;
     return (p[ln+4] == k) 
         && (  (kingside && p[ln+7] == r && !p[ln+6] && !p[ln+5]) 
            || (!kingside && p[ln] == r && !p[ln+1] && !p[ln+2] && !p[ln+3]));
