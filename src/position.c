@@ -4,14 +4,14 @@ MoveSet valid_moves(Board *b) /* List all valid moves on a board */
 {
     int i;
     Move **moves = malloc(sizeof(Move*)*60);
-    MoveSet mset = {moves, 0};
-    Board *bscratch = copy_board(b);
+    MoveSet mset = {0, moves};
+    Board bscratch;
+    copy_board(b, &bscratch);
     for (i = 0; i < 64; i++) {
         mset.count += get_piece_moves(b->piecemap, i, b->turn, (mset.moves + mset.count));
     }
 
-    mset = trim_invalid_moves(bscratch, mset);
-    free(bscratch);
+    mset = trim_invalid_moves(&bscratch, mset);
     return mset;
 } 
 
@@ -45,7 +45,6 @@ int handle_position(PositionStrategy strat, Board *b)
         if (*(mset.moves+0) != NULL) {
             applyMove(b, *(mset.moves+rand()%mset.count));
             b->turn = !b->turn;
-            sleep(2);
         } else {
             if (is_checkmate(b, mset)) {
                 printf("Checkmate!\n");

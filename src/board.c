@@ -23,30 +23,24 @@ void standard (Board *b)
 
 /* Make and return a new board. */
 
-Board get_board()
+void get_board(Board *b)
 {
-    Board *b = malloc(sizeof(Board) + sizeof(Move[20]));
+    (*b).turn = PLAYER_WHITE;
+    (*b).cur_move = 0;
 
     int i;
-    b->turn = PLAYER_WHITE;
-    b->cur_move = 0;
-
     for (i = 0; i < 64; i++) {
-        b->piecemap[i] = NO_PIECE;
+        (*b).piecemap[i] = NO_PIECE;
     }
-    
-    return *b;
 }
 
 /* Duplicate an existing board. */
 
-Board *copy_board(Board *b)
+void copy_board(Board *from, Board *to)
 {
-    Board *b2 = malloc(sizeof(Board));
     int i;
-    for (i = 0; i < 64; i++) b2->piecemap[i] = b->piecemap[i];
-    b2->turn = b->turn;
-    return b2;
+    for (i = 0; i < 64; i++) (*to).piecemap[i] = from->piecemap[i];
+    (*to).turn = from->turn;
 }
 
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
@@ -62,13 +56,13 @@ void FEN(Board *b, char *fen)
     for (i = 0; fen[i] != ' '; i++) {
         cur = fen[i];
         switch (cur) {
-            case '8': SETSQ(NO_PIECE);
-            case '7': SETSQ(NO_PIECE); 
-            case '6': SETSQ(NO_PIECE); 
-            case '5': SETSQ(NO_PIECE); 
-            case '4': SETSQ(NO_PIECE); 
-            case '3': SETSQ(NO_PIECE); 
-            case '2': SETSQ(NO_PIECE); 
+            case '8': SETSQ(NO_PIECE); /*@fallthrough@*/
+            case '7': SETSQ(NO_PIECE); /*@fallthrough@*/
+            case '6': SETSQ(NO_PIECE); /*@fallthrough@*/
+            case '5': SETSQ(NO_PIECE); /*@fallthrough@*/
+            case '4': SETSQ(NO_PIECE); /*@fallthrough@*/
+            case '3': SETSQ(NO_PIECE); /*@fallthrough@*/
+            case '2': SETSQ(NO_PIECE); /*@fallthrough@*/
             case '1': SETSQ(NO_PIECE); break;
             case 'p': SETSQ(BLACK_PAWN); break;
             case 'P': SETSQ(WHITE_PAWN); break;

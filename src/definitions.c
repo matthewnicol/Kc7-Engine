@@ -35,8 +35,8 @@ typedef struct {
 
 // Bundle up count of moves with the actual moves
 typedef struct {
-    Move **moves;
     int count;
+    Move **moves;
 } MoveSet;
 
 
@@ -71,7 +71,7 @@ static char COLOUR_PIECE_MAP[] = {
 };
 
 static char PIECE_MAP[] = { 
-    0, 
+    (char)0, 
     'P', 'P', 'R', 'R', 'K', 'K', 'N', 'B', 'Q', 
     'P', 'P', 'R', 'R', 'K', 'K', 'N', 'B', 'Q'
 };
@@ -87,13 +87,15 @@ static int is_black[] =  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
 static int is_white[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 /* Does a board have the same side's piece in sq1 and sq2 */
-int same_team(Piece p[64], int sq1, int sq2) 
+int same_team(Piece p[], int sq1, int sq2) 
 {
     return (is_black[p[sq1]] && is_black[p[sq2]]) || (is_white[p[sq1]] && is_white[p[sq2]]);
 }
 
 /* Does a board have opponent pieces in sq1 and sq2? */
-int different_team(Piece p[64], int sq1, int sq2) 
+bool different_team(Piece p[], int sq1, int sq2) 
 {
-    return (is_black[p[sq1]] && is_white[p[sq2]]) || (is_white[p[sq1]] && is_black[p[sq2]]);
+    int s1 = p[sq1];
+    int s2 = p[sq2];
+    return (is_black[s1] && is_white[s2]) || (is_white[s1] && is_black[s2]);
 }

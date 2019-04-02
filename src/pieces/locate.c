@@ -1,4 +1,4 @@
-int locate_king(Piece piecemap[64], Player colour)
+int locate_king(Piece piecemap[], Player colour)
 {
     int i;
     for (i = 0; i < 64; i++) {

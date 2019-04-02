@@ -1,4 +1,4 @@
-int pawn_moves(Piece piecemap[64], int square, Player turn, Move **moves) 
+int pawn_moves(Piece piecemap[], int square, Player turn, Move **moves) 
 {
     int i = 0;
     int direction = turn == PLAYER_BLACK ? 1 : -1;

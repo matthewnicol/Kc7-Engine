@@ -1,7 +1,6 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <string.h>
 #include <time.h>
 #include <assert.h>
@@ -18,19 +17,18 @@ int tuple_matches(char a, char b, char l[][2])
 // Board
 void reverseMove(Board*, Move*);
 int can_opponent_attack(Board*, int);
-Board get_board();
+void get_board(Board*);
 void apply_move (Board *b, Move *m);
 void reverse_move(Board *b, Move *m);
 MoveSet trim_invalid_moves(Board*, MoveSet);
 void standard (Board *b);
-Board* copy_board(Board*);
+void copy_board(Board*, Board*);
 void applyMove(Board*, Move*); 
 PieceMovement *blankPieceMovement(void);
 PieceMovement *makePieceMovement(int, int, Piece, Piece);
 Move *makeMove(PieceMovement*, PieceMovement*);
 Move *makeSimpleMove(int, int, Piece, Piece);
-int same_team(Piece[64], int, int);
-int castling_available(PieceMap, int, Turn);
+int castling_available(Piece[], int, Turn);
 
 #include "board.c"
 #include "devel.c"
