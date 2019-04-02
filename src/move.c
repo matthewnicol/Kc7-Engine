@@ -65,3 +65,33 @@ void reverseMove(Board *b, Move *m)
     }
 }
 
+char* move_to_algebraic(Move *m) {
+    char *moverepr = malloc(sizeof(char)*7);
+    memset(moverepr, '\0', 7);
+    if (is_king[m->main->on_from]) {
+        if ((m->main->from == 60 && m->main->to == 62) || (m->main->from == 4 && m->main->to == 6)) { 
+            strcpy(moverepr, "0-0"); 
+            return moverepr; 
+        }
+        if ((m->main->from == 60 && m->main->to == 58) || (m->main->from == 4 && m->main->to == 2)) { 
+            strcpy(moverepr, "0-0-0"); 
+            return moverepr; 
+        }
+    }
+
+    if (is_pawn[m->main->on_from]) {
+        if (FILE_MAP[m->main->to] != FILE_MAP[m->main->from]) {
+            sprintf(moverepr, "%cx%c%i", FILE_MAP[m->main->from], FILE_MAP[m->main->to], RANK_MAP[m->main->to]); 
+        } else sprintf(moverepr, "%c%i", FILE_MAP[m->main->on_from], RANK_MAP[m->main->to]);
+        return moverepr;
+    }
+    sprintf(
+        moverepr, 
+        "%c%s%c%i", 
+        PIECE_MAP[m->main->on_from], 
+        PIECE_MAP[m->main->on_to]? "x" : "",
+        FILE_MAP[m->main->to],
+        RANK_MAP[m->main->to]
+    );
+    return moverepr;
+}
