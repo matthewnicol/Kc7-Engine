@@ -37,8 +37,9 @@ int handle_position(PositionStrategy strat, Board *b)
         MoveSet mset = valid_moves(b);
         int i;
         for (i = 0; i < mset.count; i++) {
-            reprMove(*(mset.moves + i));
-            if (i % 5 == 0) printf("\n");
+            char *moverepr = move_to_algebraic(*(mset.moves + i));
+            printf("%s\t", moverepr);
+            if (i % 5 == 0 && i > 0)  printf("\n");
         }
         printf("\n\n");
         if (*(mset.moves+0) != NULL) {

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <string.h>
 #include <time.h>
 #include <assert.h>
 #include "definitions.c"
@@ -29,7 +30,6 @@ PieceMovement *makePieceMovement(int, int, Piece, Piece);
 Move *makeMove(PieceMovement*, PieceMovement*);
 Move *makeSimpleMove(int, int, Piece, Piece);
 int same_team(Piece[64], int, int);
-
 int castling_available(PieceMap, int, Turn);
 
 #include "board.c"
