@@ -16,7 +16,7 @@ int knight_moves(Piece piecemap[], int square, Move **moves)
                 || same_team(piecemap, square, sq2) 
                 || tuple_matches(FILE_MAP[square], FILE_MAP[sq2], invalid_knight_files)) continue;
 
-        moves[k++] = makeSimpleMove(square, sq2, piecemap[square], piecemap[sq2]); 
+        makeSimpleMove(moves[k++], square, sq2, piecemap[square], piecemap[sq2]); 
     }
     return k;
 }

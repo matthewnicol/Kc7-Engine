@@ -15,17 +15,17 @@ int get_piece_moves(Piece piecemap[], int square, Player turn, Move **moves)
 
 int square_is_attacked(Piece piecemap[], int square, Player attacker) {
     int i, j, move_count = 0;
-    Move **move_holder = malloc(sizeof(Move*)*20);
+    Move moves[20];
+    Move **move_holder;
+    move_holder = &(moves+0);
     for (i = 0; i < 64; i++) {
         move_count = get_piece_moves(piecemap, i, attacker, move_holder);
         for (j = 0; j < move_count; j++) {
-            if ((*(move_holder + j))->main->to == square) {
-                free(move_holder);
+            if (move_holder[j]->main.to == square) {
                 return 1;
             }
         }
     }
-    free(move_holder);
     return 0;
 }
         

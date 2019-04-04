@@ -4,7 +4,7 @@ static int king_differentials[][2] = {
 
 static char invalid_king_files[][2] = {{'a', 'h'}, {'h', 'a'}, {'\0', '\0'}};
 
-int king_moves(Piece piecemap[64], int square, Move **moves) 
+int king_moves(Piece piecemap[], int square, Move **moves) 
 {
     int i, k = 0;
     Turn turn = is_black[piecemap[square]] ? PLAYER_BLACK : PLAYER_WHITE;
@@ -19,17 +19,17 @@ int king_moves(Piece piecemap[64], int square, Move **moves)
             continue;
 
         // Normal king movement
-        moves[k++] = makeSimpleMove(square, sq2, moved, piecemap[sq2]);
+        makeSimpleMove(moves[k++], square, sq2, moved, piecemap[sq2]);
     }
 
-    // Castling Moves - Black
-    if (castling_available(piecemap, 1, turn))
-        moves[k++] = makeMove(
-                makePieceMovement(square, 6, moved, NO_PIECE),
-                makePieceMovement(7, 5, turn ? BLACK_ROOK : WHITE_ROOK, NO_PIECE));
-    if (castling_available(piecemap, 0, turn))
-            moves[k++] = makeMove(
-                makePieceMovement(square, 2, moved, NO_PIECE),
-                makePieceMovement(0, 3, turn ? BLACK_ROOK : WHITE_ROOK, NO_PIECE));
+    // Castling Moves 
+    if (castling_available(piecemap, 1, turn)) {
+        makeSimpleMove(moves[k++], square, 6, moved, NO_PIECE);
+        addComplexMovement(moves[k-1], 7, 5, turn ? BLACK_ROOK : WHITE_ROOK, NO_PIECE);
+    }
+    if (castling_available(piecemap, 0, turn)) {
+        makeSimpleMove(moves[k++], square, 2, moved, NO_PIECE);
+        addComplexMovement(moves[k++], 0, 3, turn ? BLACK_ROOK : WHITE_ROOK, NO_PIECE);
+    }
     return k;
 }

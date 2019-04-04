@@ -22,7 +22,7 @@ int lateral_mover(Piece piecemap[], int square, int updown, int diagonal, Move *
 
             files[j] = FILE_MAP[to];
             if ((blockaded[j] = piecemap[to]) && same_team(piecemap, square, to)) continue;
-            moves[k++] = makeSimpleMove(square, to, piecemap[square], piecemap[to]);
+            makeSimpleMove(moves[k++], square, to, piecemap[square], piecemap[to]);
         }
     }
     return k;

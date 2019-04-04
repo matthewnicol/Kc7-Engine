@@ -22,22 +22,23 @@ typedef struct {
 } PieceMovement;
 
 typedef struct {
-    PieceMovement *main; /* The move we want to make */
-    PieceMovement *alt;  /* Side effects of this move, i.e. castling, e.p. */
+    PieceMovement main; /* The move we want to make */
+    PieceMovement alt;  /* Side effects of this move, i.e. castling, e.p. */
 } Move;
-
-typedef struct {
-    Piece piecemap[64]; 
-    Player turn; 
-    int cur_move; 
-    Move *moves[];
-} Board;
 
 // Bundle up count of moves with the actual moves
 typedef struct {
     int count;
     Move **moves;
 } MoveSet;
+
+typedef struct {
+    Piece piecemap[64]; 
+    Player turn; 
+    int cur_move; 
+    MoveSet mset;
+} Board;
+
 
 
 #define VALID(X)         (X >= 0 && X < 64)
