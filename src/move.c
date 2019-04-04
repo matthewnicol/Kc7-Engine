@@ -70,12 +70,10 @@ char* move_to_algebraic(Move *m) {
     memset(moverepr, '\0', 7);
     if (is_king[m->main->on_from]) {
         if ((m->main->from == 60 && m->main->to == 62) || (m->main->from == 4 && m->main->to == 6)) { 
-            strcpy(moverepr, "0-0"); 
-            return moverepr; 
+            return "0-0";
         }
         if ((m->main->from == 60 && m->main->to == 58) || (m->main->from == 4 && m->main->to == 2)) { 
-            strcpy(moverepr, "0-0-0"); 
-            return moverepr; 
+            return "0-0-0";
         }
     }
 

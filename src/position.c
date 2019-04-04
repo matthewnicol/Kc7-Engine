@@ -15,7 +15,7 @@ MoveSet valid_moves(Board *b) /* List all valid moves on a board */
     return mset;
 } 
 
-int is_checkmate(Board *b, MoveSet mset)
+static int is_checkmate(Board *b, MoveSet mset)
 {
     // No valid moves left
     return mset.count == 0 
@@ -23,7 +23,7 @@ int is_checkmate(Board *b, MoveSet mset)
         && square_is_attacked(b->piecemap, locate_king(b->piecemap, b->turn), !b->turn);
 }
 
-int is_stalemate(Board *b, MoveSet mset)
+static int is_stalemate(Board *b, MoveSet mset)
 {
     // No valid moves left
     return mset.count == 0
@@ -39,6 +39,7 @@ int handle_position(PositionStrategy strat, Board *b)
         for (i = 0; i < mset.count; i++) {
             char *moverepr = move_to_algebraic(*(mset.moves + i));
             printf("%s\t", moverepr);
+            free(moverepr);
             if (i % 5 == 0 && i > 0)  printf("\n");
         }
         printf("\n\n");

@@ -6,11 +6,12 @@ static char invalid_king_files[][2] = {{'a', 'h'}, {'h', 'a'}, {'\0', '\0'}};
 
 int king_moves(Piece piecemap[64], int square, Move **moves) 
 {
-    int i, sq2, k = 0;
+    int i, k = 0;
     Turn turn = is_black[piecemap[square]] ? PLAYER_BLACK : PLAYER_WHITE;
     Piece moved = is_black[piecemap[square]] ? BLACK_KING : WHITE_KING;
 
     for (i = 0; i < 8; i++) {
+        int sq2;
         sq2 = square + king_differentials[i][0]*8 + knight_differentials[i][1];
         if (!VALID(sq2)
                 || tuple_matches(FILE_MAP[square], FILE_MAP[sq2], invalid_king_files)

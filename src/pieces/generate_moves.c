@@ -1,5 +1,5 @@
 
-int get_piece_moves(Piece piecemap[64], int square, Player turn, Move **moves) 
+int get_piece_moves(Piece piecemap[], int square, Player turn, Move **moves) 
 {
     if (piecemap[square] == NO_PIECE) return 0;
     if (turn == PLAYER_WHITE && is_black[piecemap[square]]) return 0;
@@ -13,7 +13,7 @@ int get_piece_moves(Piece piecemap[64], int square, Player turn, Move **moves)
     return 0;
 }
 
-int square_is_attacked(Piece piecemap[64], int square, Player attacker) {
+int square_is_attacked(Piece piecemap[], int square, Player attacker) {
     int i, j, move_count = 0;
     Move **move_holder = malloc(sizeof(Move*)*20);
     for (i = 0; i < 64; i++) {
