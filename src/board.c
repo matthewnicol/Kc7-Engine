@@ -1,98 +1,55 @@
-/* Functions for creating and manipulating boards */
-
-/* Get standard board configuration */
-
-void standard (Board *b) 
+void FEN(char *fen, /*@partial@*/ Board *b) 
 {
-    int i;
-    for (i = 0; i < 8; i++) {
-        b->piecemap[i+8] = BLACK_PAWN;
-        b->piecemap[63-8-i] = WHITE_PAWN;
-    }
-    b->piecemap[0] = b->piecemap[7] = BLACK_CASTLING_ROOK;
-    b->piecemap[1] = b->piecemap[6] = BLACK_KNIGHT;
-    b->piecemap[2] = b->piecemap[5] = BLACK_BISHOP;
-    b->piecemap[63-0] = b->piecemap[63-7] = WHITE_CASTLING_ROOK;
-    b->piecemap[63-1] = b->piecemap[63-6] = WHITE_KNIGHT;
-    b->piecemap[63-2] = b->piecemap[63-5] = WHITE_BISHOP;
-    b->piecemap[4] = BLACK_QUEEN;
-    b->piecemap[59] = WHITE_QUEEN;
-    b->piecemap[3] = BLACK_CASTLING_KING;
-    b->piecemap[60] = WHITE_CASTLING_KING;
-}
-
-/* Make and return a new board. */
-
-void get_board(Board *b, Move *m)
-{
-    b->moves = &m;
-    b->turn = PLAYER_WHITE;
-    int i;
-    for (i = 0; i < 64; i++) {
-        b->piecemap[i] = NO_PIECE;
-    }
-}
-
-/* Duplicate an existing board. */
-
-void copy_board(Board *from, Board *to)
-{
-    int i;
-    for (i = 0; i < 64; i++) (*to).piecemap[i] = from->piecemap[i];
-    (*to).turn = from->turn;
-}
-
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#define SETSQ(P)      b->piecemap[sq++] = P
-
-/* Build a board from a FEN representation */
-
-void FEN(Board *b, char *fen) 
-{
-    char cur;
     int i, sq = 0;
 
-    for (i = 0; fen[i] != ' '; i++) {
-        cur = fen[i];
-        switch (cur) {
-            case '8': SETSQ(NO_PIECE); /*@fallthrough@*/
-            case '7': SETSQ(NO_PIECE); /*@fallthrough@*/
-            case '6': SETSQ(NO_PIECE); /*@fallthrough@*/
-            case '5': SETSQ(NO_PIECE); /*@fallthrough@*/
-            case '4': SETSQ(NO_PIECE); /*@fallthrough@*/
-            case '3': SETSQ(NO_PIECE); /*@fallthrough@*/
-            case '2': SETSQ(NO_PIECE); /*@fallthrough@*/
-            case '1': SETSQ(NO_PIECE); break;
-            case 'p': SETSQ(BLACK_PAWN); break;
-            case 'P': SETSQ(WHITE_PAWN); break;
-            case 'n': SETSQ(BLACK_KNIGHT); break;
-            case 'N': SETSQ(WHITE_KNIGHT); break;
-            case 'b': SETSQ(BLACK_BISHOP); break;
-            case 'B': SETSQ(WHITE_BISHOP); break;
-            case 'r': SETSQ(BLACK_ROOK); break;
-            case 'R': SETSQ(WHITE_ROOK); break;
-            case 'q': SETSQ(BLACK_QUEEN); break;
-            case 'Q': SETSQ(WHITE_QUEEN); break;
-            case 'k': SETSQ(BLACK_KING); break;
-            case 'K': SETSQ(WHITE_KING); break;
-            case '/': break;
+    // Where the pieces are
+    for (i = 0; fen[i] != '0'; i++) {
+        if (fen[i] == '/') continue;
+        if (fen[i] > '0' && fen[i] < '9') {
+            int k = (int)(fen[i] - '0');
+            while (k > 0) {
+                b->squares[k--] = NO_PIECE;
+            }
+        } else {
+            b->squares[sq++] = chr_to_piece(fen[i]);
         }
     }
-    b->turn = ((char)fen[++i] == 'b') ? PLAYER_BLACK : PLAYER_WHITE;
+    
+    // Whose turn it is in the current position
+    b->turn = (fen[++i] == 'w' ? PLAYER_WHITE : PLAYER_BLACK);
 
-    while ((cur = (char)fen[++i]) != ' ') {
-        if (cur == 'K') {
-            b->piecemap[60] = WHITE_CASTLING_KING;
-            b->piecemap[63] = WHITE_CASTLING_ROOK;
-        } else if (cur == 'Q') {
-            b->piecemap[60] = WHITE_CASTLING_KING;
-            b->piecemap[56] = WHITE_CASTLING_ROOK;
-        } else if (cur == 'k') {
-            b->piecemap[3] = BLACK_CASTLING_KING;
-            b->piecemap[7] = BLACK_CASTLING_ROOK;
-        } else if (cur == 'q') {
-            b->piecemap[3] = BLACK_CASTLING_KING;
-            b->piecemap[0] = BLACK_CASTLING_ROOK;
+    // Kingside and Queenside castling rights
+    for (i+=2; fen[i] != ' '; i++) {
+        if (fen[i] == 'K') {
+            b->squares[4] = BLACK_CASTLING_KING;
+            b->squares[7] = BLACK_CASTLING_ROOK;
+        }
+        if (fen[i] == 'Q') {
+            b->squares[4] = BLACK_CASTLING_KING;
+            b->squares[0] = BLACK_CASTLING_ROOK;
+        }
+        if (fen[i] == 'k') {
+            b->squares[4] = BLACK_CASTLING_KING;
+            b->squares[60] = BLACK_CASTLING_ROOK;
+        }
+        if (fen[i] == 'q') {
+            b->squares[60] = BLACK_CASTLING_KING;
+            b->squares[56] = BLACK_CASTLING_ROOK;
         }
     }
+    
+    // En Passant Square
+    if (fen[(i+=2)] != '-') {
+        b->squares[algebraic_to_sq(fen[i], fen[i+1])] = 
+            b->squares[algebraic_to_sq(fen[i], fen[i+1])] == WHITE_PAWN ? 
+                WHITE_EP_PAWN : BLACK_EP_PAWN;
+    }
+
+
+
+}
+
+void standard_position(/*@partial@*/ Board *b)
+{ 
+    FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", b);
 }
