@@ -17,15 +17,13 @@ int tuple_matches(char a, char b, char l[][2])
 // Board
 void reverseMove(Board*, Move*);
 int can_opponent_attack(Board*, int);
-Board get_board(Move**);
+void get_board(Board*, Move*);
 void apply_move (Board *b, Move *m);
 void reverse_move(Board *b, Move *m);
 MoveSet trim_invalid_moves(Board*, MoveSet);
 void standard (Board *b);
 void copy_board(Board*, Board*);
 void applyMove(Board*, Move*); 
-void makePieceMovement(PieceMovement*, int, int, Piece, Piece);
-void makeMove(Move*, PieceMovement*, PieceMovement*);
 void addComplexMovement(Move*, int, int, Piece, Piece);
 void makeSimpleMove(Move*, int, int, Piece, Piece);
 int castling_available(Piece[], int, Turn);

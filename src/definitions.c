@@ -15,28 +15,27 @@ typedef enum {
 } PositionStrategy;
 
 typedef struct {
-    int from;       /* 0-64 -> The square we moved from */
-    int to;         /* 0-64 -> The square we moved to */
-    Piece on_from;  /* Record pieces on each square to help with reversing board */
-    Piece on_to;    /* Record pieces on each square to help with reversing board */
-} PieceMovement;
-
-typedef struct {
-    PieceMovement main; /* The move we want to make */
-    PieceMovement alt;  /* Side effects of this move, i.e. castling, e.p. */
+    int from;
+    int to;
+    Piece on_from;
+    Piece on_to;
+    int s_effect_from;
+    int s_effect_to;
+    int s_effect_on_from;
+    int s_effect_on_to;
 } Move;
 
 // Bundle up count of moves with the actual moves
 typedef struct {
     int count;
-    Move **moves;
+    Move *moves;
 } MoveSet;
 
 typedef struct {
     Piece piecemap[64]; 
     Player turn; 
-    int cur_move; 
-    MoveSet mset;
+    int count;
+    Move **moves;
 } Board;
 
 

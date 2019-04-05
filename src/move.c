@@ -1,79 +1,69 @@
-void makePieceMovement (PieceMovement *p, int from, int to, Piece on_from, Piece on_to)
-{
-    assert(from >= 0 && from <= 63);
-    assert(to >= 0 && to <= 63);
-    assert(on_from < 22);
-    assert(on_to < 22);
-    (*p).from = from;
-    (*p).to = to;
-    (*p).on_from = on_from;
-    (*p).on_to = on_to;
-}
-
 void addComplexMovement(Move *m, int from, int to, Piece on_from, Piece on_to)
 {
-    makePieceMovement(&m->alt, from, to, on_from, on_to);
+    m->s_effect_from = from;
+    m->s_effect_to = to;
+    m->s_effect_on_from = on_from;
+    m->s_effect_on_to = on_to;
 }
 
 void makeSimpleMove(Move *m, int from, int to, Piece on_from, Piece on_to)
 {
-    makePieceMovement(m->main, from, to, on_from, on_to);
-    makePieceMovement(m->alt, -1, -1, NO_PIECE, NO_PIECE);
+    m->from = from;
+    m->to = to;
+    m->on_from = on_from;
+    m->on_to = on_to;
+    m->s_effect_from = -1;
+    m->s_effect_to = -1;
+    m->s_effect_on_from = NO_PIECE;
+    m->s_effect_on_to = NO_PIECE;
 }
-
-void makeMove (Move *m, PieceMovement *main, PieceMovement *alt)
-{
-    m->main = main;
-    m->alt = alt;
-}
-
 
 void applyMove(Board *b, Move *m)
 {
-    b->piecemap[m->main.to] = m->main.on_from;
-    b->piecemap[m->main.from] = NO_PIECE;
+    b->piecemap[m->to] = m->on_from;
+    b->piecemap[m->from] = NO_PIECE;
 
-    if (m->alt.from == -1 && m->alt.to == -1 && m->alt.on_from == NO_PIECE && m->alt.to == NO_PIECE) return;
-    b->piecemap[m->alt.to] = m->alt.on_from;
-    if (m->alt.from >= 0 && m->alt.from < 64) {
-        b->piecemap[m->alt.from] = NO_PIECE;
+    if (m->s_effect_from == -1 && m->s_effect_to == -1 && m->s_effect_on_from == NO_PIECE && m->s_effect_to == NO_PIECE) return;
+    b->piecemap[m->s_effect_to] = m->s_effect_on_from;
+    if (m->s_effect_from >= 0 && m->s_effect_from < 64) {
+        b->piecemap[m->s_effect_from] = NO_PIECE;
     }
 }
 
 void reverseMove(Board *b, Move *m)
 {
-    b->piecemap[m->main.from] = m->main.on_from;
-    b->piecemap[m->main.to] = m->main.on_to;
-    if (m->alt.from == -1 && m->alt.to == -1 && m->alt.on_from == NO_PIECE && m->alt.to == NO_PIECE) return;
-    b->piecemap[m->alt.to] = m->alt.on_to;
-    b->piecemap[m->alt.from] = m->alt.on_from;
+    b->piecemap[m->from] = m->on_from;
+    b->piecemap[m->to] = m->on_to;
+    if (m->s_effect_from == -1 && m->s_effect_to == -1 && m->s_effect_from == NO_PIECE && m->s_effect_to == NO_PIECE) return;
+    b->piecemap[m->s_effect_to] = m->s_effect_on_to;
+    b->piecemap[m->s_effect_to] = m->s_effect_on_from;
 }
 
-char* move_to_algebraic(Move *m) {
-    char *moverepr = malloc(sizeof(char)*7);
-    memset(moverepr, '\0', 7);
-    if (is_king[m->main.on_from]) {
-        if ((m->main.from == 60 && m->main.to == 62) || (m->main.from == 4 && m->main.to == 6)) { 
-            return "0-0";
+int move_to_algebraic(char *moverepr, Move *m) {
+    if (is_king[m->on_from]) {
+        if ((m->from == 60 && m->to == 62) || (m->from == 4 && m->to == 6)) { 
+            return snprintf(moverepr, sizeof(char)*8, "%s", "0-0");
         }
-        if ((m->main.from == 60 && m->main.to == 58) || (m->main.from == 4 && m->main.to == 2)) { 
-            return "0-0-0";
+        if ((m->from == 60 && m->to == 58) || (m->from == 4 && m->to == 2)) { 
+            return snprintf(moverepr, sizeof(char)*8, "%s", "0-0-0");
         }
     }
 
-    if (is_pawn[m->main.on_from]) {
-        if (FILE_MAP[m->main.to] != FILE_MAP[m->main.from]) {
-            sprintf(moverepr, "%cx%c%i", FILE_MAP[m->main.from], FILE_MAP[m->main.to], RANK_MAP[m->main.to]); 
-        } else sprintf(moverepr, "%c%i", FILE_MAP[m->main.on_from], RANK_MAP[m->main.to]);
-        return moverepr;
+    if (is_pawn[m->on_from]) {
+        if (FILE_MAP[m->to] != FILE_MAP[m->from]) {
+            return snprintf(
+                moverepr, sizeof(char)*8, 
+                "%cx%c%i", FILE_MAP[m->from], FILE_MAP[m->to], RANK_MAP[m->to]
+             ); 
+        } else return snprintf(moverepr, sizeof(char)*8, "%c%i", FILE_MAP[m->on_from], RANK_MAP[m->to]);
     }
-    sprintf(
+    return snprintf(
         moverepr, 
+        sizeof(char)*8,
         "%c%s%c%i", 
-        PIECE_MAP[m->main.on_from], 
-        PIECE_MAP[m->main.on_to]? "x" : "",
-        FILE_MAP[m->main.to],
-        RANK_MAP[m->main.to]
+        PIECE_MAP[m->on_from], 
+        PIECE_MAP[m->on_to]? "x" : "",
+        FILE_MAP[m->to],
+        RANK_MAP[m->to]
     );
-    return moverepr;
 }

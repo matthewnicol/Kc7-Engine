@@ -1,14 +1,14 @@
 /* Functions for getting information about positions */
 
-MoveSet valid_moves(Board *b) /* List all valid moves on a board */
+void valid_moves(MoveSet *ml, Board *b) /* List all valid moves on a board */
 {
     int i;
-    Move **moves = malloc(sizeof(Move*)*60);
-    MoveSet mset = {0, moves};
+    Move *move_list = malloc(sizeof(Move*)*60);
+    MoveSet mset = {0, &moves};
     Board bscratch;
     copy_board(b, &bscratch);
     for (i = 0; i < 64; i++) {
-        mset.count += get_piece_moves(b->piecemap, i, b->turn, (mset.moves + mset.count));
+        mset.count += get_piece_moves(b->piecemap, i, b->turn, &(mset.moves + mset.count));
     }
 
     mset = trim_invalid_moves(&bscratch, mset);
@@ -34,17 +34,23 @@ static int is_stalemate(Board *b, MoveSet mset)
 int handle_position(PositionStrategy strat, Board *b) 
 {
     if (strat == MAKE_RANDOM_MOVE) {
-        MoveSet mset = valid_moves(b);
+        MoveSet mset;
+        Move *m = malloc(sizeof(Move*)*60);
+        *mset->moves = m;
+        mset->count = 0;
+        valid_moves(mset, b);
+
         int i;
         for (i = 0; i < mset.count; i++) {
-            char *moverepr = move_to_algebraic(*(mset.moves + i));
-            printf("%s\t", moverepr);
-            free(moverepr);
-            if (i % 5 == 0 && i > 0)  printf("\n");
+            char *moverepr = malloc(sizeof(char)*9);
+            if (move_to_algebraic(moverepr, &(mset.moves[i])) != 0) {
+                printf("%s\t", moverepr);
+                if (i % 5 == 0 && i > 0)  printf("\n");
+            }
         }
         printf("\n\n");
         if (*(mset.moves+0) != NULL) {
-            applyMove(b, *(mset.moves+rand()%mset.count));
+            applyMove(b, &(mset.moves[rand()%mset.count]));
             b->turn = !b->turn;
         } else {
             if (is_checkmate(b, mset)) {

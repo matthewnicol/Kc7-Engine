@@ -15,13 +15,11 @@ int get_piece_moves(Piece piecemap[], int square, Player turn, Move **moves)
 
 int square_is_attacked(Piece piecemap[], int square, Player attacker) {
     int i, j, move_count = 0;
-    Move moves[20];
-    Move **move_holder;
-    move_holder = &(moves+0);
+    Move **move_holder = malloc(sizeof(Move*)*20);
     for (i = 0; i < 64; i++) {
         move_count = get_piece_moves(piecemap, i, attacker, move_holder);
         for (j = 0; j < move_count; j++) {
-            if (move_holder[j]->main.to == square) {
+            if (move_holder[j]->to == square) {
                 return 1;
             }
         }
@@ -35,12 +33,12 @@ MoveSet trim_invalid_moves(Board *b, MoveSet m)
     int i, k = 0;
     b->turn = !b->turn; 
     for (i = 0; i < m.count; i++) {
-        applyMove(b, *(m.moves+i));
+        applyMove(b, m.moves[i]);
         if (locate_king(b->piecemap, b->turn) != -1 
                 && locate_king(b->piecemap, !b->turn) != -1
                 && !square_is_attacked(b->piecemap, locate_king(b->piecemap, !(b->turn)), b->turn))
-        *(m.moves + k++) = *(m.moves + i);
-        reverseMove(b, *(m.moves+i));
+        m.moves[k++] = *m.moves[i];
+        reverseMove(b, *m.moves[i]);
     }
     m.count = k;
     return m;

@@ -23,19 +23,14 @@ void standard (Board *b)
 
 /* Make and return a new board. */
 
-Board get_board(Move **m)
+void get_board(Board *b, Move *m)
 {
-    Board b;
-    b.turn = PLAYER_WHITE;
-    b.cur_move = 0;
-
+    b->moves = &m;
+    b->turn = PLAYER_WHITE;
     int i;
     for (i = 0; i < 64; i++) {
-        b.piecemap[i] = NO_PIECE;
+        b->piecemap[i] = NO_PIECE;
     }
-    b.mset.count = 0;
-    b.mset.moves = m;
-    return b; 
 }
 
 /* Duplicate an existing board. */
