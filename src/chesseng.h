@@ -40,7 +40,7 @@ typedef struct {
      Player turn; 
      int count;
      Piece squares[64]; 
-    /*@out@*/ Move **moves;
+    /*@out@*/ Move *moves;
 } Board;
 
 
@@ -56,16 +56,16 @@ typedef struct {
 //    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
 //};
 
-//static int RANK_MAP[] = {
-//    8, 8, 8, 8, 8, 8, 8, 8,
-//    7, 7, 7, 7, 7, 7, 7, 7,
-//    6, 6, 6, 6, 6, 6, 6, 6,
-//    5, 5, 5, 5, 5, 5, 5, 5,
-//    4, 4, 4, 4, 4, 4, 4, 4,
-//    3, 3, 3, 3, 3, 3, 3, 3,
-//    2, 2, 2, 2, 2, 2, 2, 2,
-//    1, 1, 1, 1, 1, 1, 1, 1
-//};
+static int RANK_MAP[] = {
+    8, 8, 8, 8, 8, 8, 8, 8,
+    7, 7, 7, 7, 7, 7, 7, 7,
+    6, 6, 6, 6, 6, 6, 6, 6,
+    5, 5, 5, 5, 5, 5, 5, 5,
+    4, 4, 4, 4, 4, 4, 4, 4,
+    3, 3, 3, 3, 3, 3, 3, 3,
+    2, 2, 2, 2, 2, 2, 2, 2,
+    1, 1, 1, 1, 1, 1, 1, 1
+};
 
 static char COLOUR_PIECE_MAP[] = { 
     '*', 
@@ -84,7 +84,7 @@ static char COLOUR_PIECE_MAP[] = {
 //static int is_rook[] =   {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
 //static int is_bishop[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
 //static int is_knight[] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0};
-//static int is_pawn[] =   {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0};
+static int is_pawn[] =   {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0};
 //static int is_empty[] =  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static int is_black[] =  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static int is_white[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
@@ -128,4 +128,4 @@ int algebraic_to_sq(char file, char rank)
 }
 
 #include "board.c"
-
+#include "move.c"
