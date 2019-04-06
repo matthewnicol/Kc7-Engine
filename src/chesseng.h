@@ -37,10 +37,10 @@ typedef struct {
 } MoveSet;
 
 typedef struct {
-    Piece squares[64]; 
-    Player turn; 
-    int count;
-    Move **moves;
+     Player turn; 
+     int count;
+     Piece squares[64]; 
+    /*@out@*/ Move **moves;
 } Board;
 
 
@@ -67,11 +67,11 @@ typedef struct {
 //    1, 1, 1, 1, 1, 1, 1, 1
 //};
 
-//static char COLOUR_PIECE_MAP[] = { 
-//    '*', 
-//    'p', 'p', 'r', 'r', 'k', 'k', 'n', 'b', 'q', 
-//    'P', 'P', 'R', 'R', 'K', 'K', 'N', 'B', 'Q'
-//};
+static char COLOUR_PIECE_MAP[] = { 
+    '*', 
+    'p', 'p', 'r', 'r', 'k', 'k', 'n', 'b', 'q', 
+    'P', 'P', 'R', 'R', 'K', 'K', 'N', 'B', 'Q'
+};
 
 //static char PIECE_MAP[] = { 
 //    (char)0, 
