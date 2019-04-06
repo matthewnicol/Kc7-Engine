@@ -12,7 +12,7 @@ void FEN(char *fen, Board *b)
     int i, sq = 0;
 
     // Where the pieces are
-    for (i = 0; fen[i] != '0'; i++) {
+    for (i = 0; fen[i] != ' '; i++) {
         if (fen[i] == '/') continue;
         if (fen[i] > '0' && fen[i] < '9') {
             int k = (int)(fen[i] - '0');
@@ -48,10 +48,9 @@ void FEN(char *fen, Board *b)
     }
     
     // En Passant Square
-    if (fen[(i+=2)] != '-') {
-        b->squares[algebraic_to_sq(fen[i], fen[i+1])] = 
-            b->squares[algebraic_to_sq(fen[i], fen[i+1])] == WHITE_PAWN ? 
-                WHITE_EP_PAWN : BLACK_EP_PAWN;
+    if (fen[++i] != '-') {
+        Piece np = b->squares[sq] == WHITE_PAWN? WHITE_EP_PAWN : BLACK_EP_PAWN;
+        b->squares[sq] = np;
     }
 }
 
