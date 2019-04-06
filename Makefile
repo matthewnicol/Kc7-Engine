@@ -4,3 +4,5 @@ run:
 	./bin/chesseng
 lint:
 	splint +boolint ./src/main.c
+valgrind:
+	valgrind --leak-check=yes ./bin/chesseng
