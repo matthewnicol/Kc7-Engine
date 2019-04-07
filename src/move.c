@@ -4,6 +4,8 @@
 static int pawn_advances(Piece[], int, Turn, Move*);
 static int pawn_captures(Piece[], int, Turn, Move*);
 static int pawn_ep_captures(Piece[], int, Turn, Move*);
+static int pawn_promotions(Piece[], int, Turn, Move*);
+static int knight_moves(Piece[], int, Move*);
 /*@null@*/ static MoveSet* make_moveset(int);
 static void kill_moveset(MoveSet*);
 static void primary_move(Move*, int, int, Piece, Piece);
@@ -19,6 +21,9 @@ void all_legal_moves(Piece sq[], Turn t)
             m->count += pawn_advances(sq, i, t, m->moves+m->count); 
             m->count += pawn_captures(sq, i, t, m->moves+m->count);
             m->count += pawn_ep_captures(sq, i, t, m->moves+m->count);
+            m->count += pawn_promotions(sq, i, t, m->moves+m->count);
+        } else if (is_knight[sq[i]]) {
+            m->count += knight_moves(sq, i, m->moves+m->count);
         }
     }
 
@@ -37,18 +42,20 @@ void all_legal_moves(Piece sq[], Turn t)
 static int pawn_advances(Piece sq[], int square, Turn t, Move *m)
 {
     int i = 0, direction = t? 1 : -1;
-
-    int can_move_1 = (VALID(square+(8*direction)) && !sq[square+(8*direction)]);
-    if (can_move_1) {
-        primary_move((m + i++), square, square + (8*direction), sq[square], NO_PIECE);
-    }
     int on_home_rank = (RANK_MAP[sq[square]] == 2 && t) || (RANK_MAP[sq[square]] == 7 && !t);
+    int on_promote_rank = (RANK_MAP[sq[square]] == 7 && t) || (RANK_MAP[sq[square]] == 2 && !t);
+    int can_move_1 = (VALID(square+(8*direction)) && !sq[square+(8*direction)] && !on_promote_rank);
     int can_move_2 = (
         can_move_1
         && VALID(square+(16*direction)) 
         && on_home_rank
         && !sq[square+(16*direction)]
     );
+
+    if (can_move_1) {
+        primary_move((m + i++), square, square + (8*direction), sq[square], NO_PIECE);
+    }
+
     if (can_move_2) {
         primary_move((m + i++), square, square + (16*direction), sq[square], NO_PIECE);
     } 
@@ -76,13 +83,66 @@ static int pawn_ep_captures(Piece sq[], int square, Turn t, Move *m)
 
     if (sq[square+(-1*direction)] == them && FILE_MAP[square+(-1*direction)] != ep1_file) {
         primary_move((m + i++), square, square + (9*direction), sq[square], sq[square+(9*direction)]);
-        side_effect_move((m + i-1), -1, square+(-1*direction), NO_PIECE, them);
+        side_effect_move((m + i-1), EP_CAPTURE);
     }
     if (sq[square+(1*direction)] == them && FILE_MAP[square+(1*direction)] != ep2_file) {
         primary_move((m + i++), square, square + (7*direction), sq[square], sq[square+(7*direction)]);
-        side_effect_move((m + i-1), -1, square+(1*direction), NO_PIECE, them);
+        side_effect_move((m + i-1), EP_CAPTURE);
     }
     return i;
+}
+
+static int pawn_promotions(Piece sq[], int square, Turn t, Move *m)
+{
+
+    static Piece promotions[][4] = {
+        {BLACK_QUEEN, BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP},
+        {WHITE_QUEEN, WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP},
+    };
+
+
+    int i = 0, j, direction = t? 1 : -1;
+    int on_promote_rank = (RANK_MAP[sq[square]] == 7 && t) || (RANK_MAP[sq[square]] == 2 && !t);
+    if (on_promote_rank && !sq[square+(8*direction)])
+    {
+        for (j = 0; j < 4; j++) {
+            primary_move((m + i++), square, square + (8*direction), sq[square], promotions[t][j]);
+            side_effect_move((m + i-1), PROMOTION);
+        }
+    }
+    return i;
+
+}
+
+static int knight_moves(Piece sq[], int square, Move *m)
+{
+    static int knight_diffs[][2] = {
+        {-1, 2}, {1, 2}, {-1, -2}, {1, -2},
+        {2, -1}, {2, 1}, {-2, -1}, {-2, 1},
+    };
+
+    static char bad_knight_jumps [][2] = {
+        {'a', 'h'}, {'a', 'g'}, {'b', 'h'},
+        {'h', 'a'}, {'g', 'a'}, {'h', 'b'}
+    };
+
+    int i = 0, j;
+
+    for (j = 0; j < 8; j++) {
+        int sqto = square + knight_diffs[j][0]*8 + knight_diffs[j][1];
+        if (VALID(sqto) && (!sq[sqto] || different_team(sq, square, sqto))) {
+            int k, clipping = 0;
+            for (k = 0; k < 6; k++) {
+                if (FILE_MAP[sqto] == bad_knight_jumps[j][0] && FILE_MAP[square] == bad_knight_jumps[j][1]) {
+                    clipping = 1;
+                    break;
+                }
+            }
+            if (!clipping) primary_move((m+i++), square, sqto, sq[square], sq[sqto]); 
+        }
+    } 
+    return i;
+
 }
 
 static MoveSet *make_moveset(int size)
