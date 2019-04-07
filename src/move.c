@@ -1,10 +1,13 @@
 #define either(A,B,C)    (A == B || A == C)
 #define VALID(A)    (A >= 0 && A < 64)
 
-static int pawn_moves(Piece[], int, Turn, Move*);
+static int pawn_advances(Piece[], int, Turn, Move*);
+static int pawn_captures(Piece[], int, Turn, Move*);
+static int pawn_ep_captures(Piece[], int, Turn, Move*);
 /*@null@*/ static MoveSet* make_moveset(int);
 static void kill_moveset(MoveSet*);
 static void primary_move(Move*, int, int, Piece, Piece);
+static void side_effect_move(Move*, int, int, Piece, Piece);
 
 void all_legal_moves(Piece sq[], Turn t)
 {
@@ -13,7 +16,9 @@ void all_legal_moves(Piece sq[], Turn t)
     assert(m != NULL);
     for (i = 0; i < 64; i++) {
         if (is_pawn[sq[i]]) {
-            m->count += pawn_moves(sq, i, t, m->moves+m->count); 
+            m->count += pawn_advances(sq, i, t, m->moves+m->count); 
+            m->count += pawn_captures(sq, i, t, m->moves+m->count);
+            m->count += pawn_ep_captures(sq, i, t, m->moves+m->count);
         }
     }
 
@@ -29,20 +34,55 @@ void all_legal_moves(Piece sq[], Turn t)
     kill_moveset(m);    
 }
 
-static int pawn_moves(Piece sq[], int square, Turn t, Move *m)
+static int pawn_advances(Piece sq[], int square, Turn t, Move *m)
 {
-    int i = 0;
-    int direction = t? 1 : -1;
+    int i = 0, direction = t? 1 : -1;
 
-    if (VALID(square+(8*direction)) && !sq[square+(8*direction)]) {
+    int can_move_1 = (VALID(square+(8*direction)) && !sq[square+(8*direction)]);
+    if (can_move_1) {
         primary_move((m + i++), square, square + (8*direction), sq[square], NO_PIECE);
     }
-    if (((RANK_MAP[sq[square]] == 2 && !t) || (RANK_MAP[sq[square]] == 7 && t))
-            && i && !sq[square+(16*direction)]) {
+    int on_home_rank = (RANK_MAP[sq[square]] == 2 && t) || (RANK_MAP[sq[square]] == 7 && !t);
+    int can_move_2 = (
+        can_move_1
+        && VALID(square+(16*direction)) 
+        && on_home_rank
+        && !sq[square+(16*direction)]
+    );
+    if (can_move_2) {
         primary_move((m + i++), square, square + (16*direction), sq[square], NO_PIECE);
+    } 
+    return i;
+}
+
+static int pawn_captures(Piece sq[], int square, Turn t, Move *m)
+{
+    int i = 0, direction = t? 1 : -1;
+    if (different_team(sq, square, square+(9*direction))) {
+        primary_move((m + i++), square, square + (9*direction), sq[square], sq[square+(9*direction)]);
+    }
+    if (different_team(sq, square, square+(7*direction))) {
+        primary_move((m + i++), square, square + (7*direction), sq[square], sq[square+(7*direction)]);
     }
     return i;
+}
 
+static int pawn_ep_captures(Piece sq[], int square, Turn t, Move *m)
+{
+    int i = 0, direction = t? 1 : -1;
+    Piece them = t? WHITE_EP_PAWN : BLACK_EP_PAWN;
+    char ep1_file = t? 'a' : 'h';
+    char ep2_file = t? 'h' : 'a';
+
+    if (sq[square+(-1*direction)] == them && FILE_MAP[square+(-1*direction)] != ep1_file) {
+        primary_move((m + i++), square, square + (9*direction), sq[square], sq[square+(9*direction)]);
+        side_effect_move((m + i-1), -1, square+(-1*direction), NO_PIECE, them);
+    }
+    if (sq[square+(1*direction)] == them && FILE_MAP[square+(1*direction)] != ep2_file) {
+        primary_move((m + i++), square, square + (7*direction), sq[square], sq[square+(7*direction)]);
+        side_effect_move((m + i-1), -1, square+(1*direction), NO_PIECE, them);
+    }
+    return i;
 }
 
 static MoveSet *make_moveset(int size)
@@ -85,10 +125,17 @@ static void kill_moveset(MoveSet* m)
 }
 
 static void primary_move(Move *m, int from, int to, Piece on_from, Piece on_to)
-
 {
     m->from = from;
     m->to = to;
     m->on_from = on_from;
     m->on_to = on_to;
+}
+
+static void side_effect_move(Move *m, int from, int to, Piece on_from, Piece on_to)
+{
+    m->s_effect_from = from;
+    m->s_effect_to = to;
+    m->s_effect_on_from = on_from;
+    m->s_effect_on_to = on_to;
 }
