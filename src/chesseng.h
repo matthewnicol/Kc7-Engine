@@ -19,15 +19,16 @@ typedef enum {
     MAKE_RANDOM_MOVE, PROMPT_FOR_MOVE, FIND_BEST_MOVE
 } PositionStrategy;
 
+typedef enum {
+    NO_S_EFFECT, EP_CAPTURE, PROMOTION, CASTLE
+} MoveSideEffect;
+
 typedef struct {
     int from;
     int to;
     Piece on_from;
     Piece on_to;
-    int s_effect_from;
-    int s_effect_to;
-    int s_effect_on_from;
-    int s_effect_on_to;
+    MoveSideEffect side_effect;
 } Move;
 
 // Bundle up count of moves with the actual moves

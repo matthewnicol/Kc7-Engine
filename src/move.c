@@ -7,7 +7,7 @@ static int pawn_ep_captures(Piece[], int, Turn, Move*);
 /*@null@*/ static MoveSet* make_moveset(int);
 static void kill_moveset(MoveSet*);
 static void primary_move(Move*, int, int, Piece, Piece);
-static void side_effect_move(Move*, int, int, Piece, Piece);
+static void side_effect_move(Move*, MoveSideEffect);
 
 void all_legal_moves(Piece sq[], Turn t)
 {
@@ -107,10 +107,7 @@ static MoveSet *make_moveset(int size)
         m[i].to = -1;
         m[i].on_from = NO_PIECE;
         m[i].on_to = NO_PIECE;
-        m[i].s_effect_from = -1;
-        m[i].s_effect_to = -1;
-        m[i].s_effect_on_from = NO_PIECE;
-        m[i].s_effect_on_to = NO_PIECE;
+        m[i].side_effect = NO_S_EFFECT;
     }
 
     return mset;
@@ -132,10 +129,7 @@ static void primary_move(Move *m, int from, int to, Piece on_from, Piece on_to)
     m->on_to = on_to;
 }
 
-static void side_effect_move(Move *m, int from, int to, Piece on_from, Piece on_to)
+static void side_effect_move(Move *m, MoveSideEffect mse)
 {
-    m->s_effect_from = from;
-    m->s_effect_to = to;
-    m->s_effect_on_from = on_from;
-    m->s_effect_on_to = on_to;
+    m->side_effect = mse;
 }
