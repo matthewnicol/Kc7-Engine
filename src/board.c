@@ -29,21 +29,21 @@ void FEN(char *fen, Board *b)
 
     // Kingside and Queenside castling rights
     for (i+=2; fen[i] != ' '; i++) {
-        if (fen[i] == 'K') {
+        if (fen[i] == 'q') {
             b->squares[4] = BLACK_CASTLING_KING;
             b->squares[7] = BLACK_CASTLING_ROOK;
         }
-        if (fen[i] == 'Q') {
+        if (fen[i] == 'k') {
             b->squares[4] = BLACK_CASTLING_KING;
             b->squares[0] = BLACK_CASTLING_ROOK;
         }
-        if (fen[i] == 'k') {
-            b->squares[4] = BLACK_CASTLING_KING;
-            b->squares[60] = BLACK_CASTLING_ROOK;
+        if (fen[i] == 'K') {
+            b->squares[60] = WHITE_CASTLING_KING;
+            b->squares[63] = WHITE_CASTLING_ROOK;
         }
-        if (fen[i] == 'q') {
-            b->squares[60] = BLACK_CASTLING_KING;
-            b->squares[56] = BLACK_CASTLING_ROOK;
+        if (fen[i] == 'Q') {
+            b->squares[60] = WHITE_CASTLING_KING;
+            b->squares[56] = WHITE_CASTLING_ROOK;
         }
     }
     
