@@ -20,7 +20,7 @@ typedef enum {
 } PositionStrategy;
 
 typedef enum {
-    NO_S_EFFECT, EP_CAPTURE, PROMOTION, CASTLE
+    NO_S_EFFECT, EP_CAPTURE, PROMOTION, KS_CASTLE, QS_CASTLE
 } MoveSideEffect;
 
 typedef struct {

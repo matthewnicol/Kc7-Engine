@@ -231,10 +231,10 @@ static int king_castles(Piece sq[], int square, Move *m)
         return 0;
 
     if (sq[square+3] == castling_rook[piece_index] && !sq[square+1] && !sq[square+2]) {
-        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, CASTLE);
+        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, KS_CASTLE);
     }
     if (sq[square-4] == castling_rook[piece_index] && !sq[square-1] && !sq[square-2] && !sq[square-3]) {
-        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, CASTLE);
+        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, QS_CASTLE);
     }
 
     return i;

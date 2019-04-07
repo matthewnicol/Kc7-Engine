@@ -59,6 +59,23 @@ void standard_position(Board *b)
     FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", b);
 }
 
+void apply_move(Board *b, Move *m)
+{
+    b->squares[m->to] = b->squares[m->on_from];
+    b->squares[m->from] = NO_PIECE;
+    if (m->side_effect == KS_CASTLE) {
+        b->squares[m->from+1] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
+        b->squares[m->to+1] = NO_PIECE;
+    } else if (m->side_effect == QS_CASTLE) {
+        b->squares[m->from-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
+        b->squares[m->to+4] = NO_PIECE;
+    } else if (m->side_effect == EP_CAPTURE) {
+        b->squares[m->to + (8 * (is_white[b->squares[m->to]] ? 1 : -1))] = NO_PIECE;
+    } else if (m->side_effect == PROMOTION) {
+        // this side effect is needed for reverse_move
+    }
+}
+
 #define RP(X)   (COLOUR_PIECE_MAP[p[X]])
 
 void printBoard(Piece p[])
