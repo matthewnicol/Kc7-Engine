@@ -130,3 +130,4 @@ int algebraic_to_sq(char file, char rank)
 
 #include "board.c"
 #include "move.c"
+#include "ai.c"
