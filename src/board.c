@@ -61,7 +61,7 @@ void standard_position(Board *b)
 
 void apply_move(Board *b, Move *m)
 {
-    b->squares[m->to] = b->squares[m->on_from];
+    b->squares[m->to] = m->on_from;
     b->squares[m->from] = NO_PIECE;
     if (m->side_effect == KS_CASTLE) {
         b->squares[m->from+1] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
@@ -81,9 +81,32 @@ void apply_move(Board *b, Move *m)
 void printBoard(Piece p[])
 {
     int j = 0, i = 0;
+    char *reset = "\033[0m";
+    char *black = "\033[1;31m";
+    char *white = "\033[1;97m";
+    char *sqnum = "\033[90m";
     for (i = 0; i < 8; i++) {
-        printf("\t");
-        for (j = 0; j < 8; j++) printf("%c ", RP(i*8+j));
+       
+        printf("\t|");
+        for (j = 0; j < 8; j++) {
+            printf("%s%2i---|%s", sqnum, i*8+j, reset);
+        }
+        printf("\n");
+        printf("\t%s|%s", sqnum, reset);
+        for (j = 0; j < 8; j++) {
+            printf("%s%4c%s %s|%s", 
+                is_black[p[i*8+j]]? black : white,
+                p[i*8+j]? RP(i*8+j) : ' ',
+                reset,
+                sqnum,
+                reset
+            );
+        }
         printf("\n");
     }
+        printf("\t|");
+        for (j = 0; j < 8; j++) {
+            printf("%s-----|%s", sqnum, reset);
+        }
+        printf("\n");
 }
