@@ -89,7 +89,7 @@ void printBoard(Piece p[])
        
         printf("\t|");
         for (j = 0; j < 8; j++) {
-            printf("%s%2i---|%s", sqnum, i*8+j, reset);
+            printf("%s%02i---|%s", sqnum, i*8+j, reset);
         }
         printf("\n");
         printf("\t%s|%s", sqnum, reset);
