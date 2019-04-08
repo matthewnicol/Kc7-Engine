@@ -14,7 +14,7 @@ static void kill_moveset(MoveSet*);
 static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
 
-void all_legal_moves(Piece sq[], Turn t)
+MoveSet *all_legal_moves(Piece sq[], Turn t)
 {
     int i;
     MoveSet *m = make_moveset(30);
@@ -42,22 +42,24 @@ void all_legal_moves(Piece sq[], Turn t)
 
     for (i = 0; i < m->count; i++) {
         printf(
-            "SQ %i (piece %i) to SQ %i (piece %i)\n", 
+            "Mv%2i: SQ %i (piece %i) to SQ %i (piece %i) %s\n", 
+            i,
             (int)((m->moves+i)->from),
             (int)((m->moves+i)->on_from),
             (int)((m->moves+i)->to),
-            (int)((m->moves+i)->on_to)
+            (int)((m->moves+i)->on_to),
+            (m->moves+i)->on_to ? "(CAPTURE)" : ""
         );
     }
-    kill_moveset(m);    
+    return m;
 }
 
 static int pawn_advances(Piece sq[], int square, Turn t, Move *m)
 {
-    int i = 0, direction = t? 1 : -1;
-    int on_home_rank = (RANK_MAP[sq[square]] == 2 && t) || (RANK_MAP[sq[square]] == 7 && !t);
-    int on_promote_rank = (RANK_MAP[sq[square]] == 7 && t) || (RANK_MAP[sq[square]] == 2 && !t);
-    int can_move_1 = (VALID(square+(8*direction)) && !sq[square+(8*direction)] && !on_promote_rank);
+    int i = 0, direction = t == PLAYER_BLACK? 1 : -1;
+    int on_home_rank = (RANK_MAP[square] == 2 && t == PLAYER_WHITE) || (RANK_MAP[square] == 7 && t == PLAYER_BLACK);
+    int on_promote_sq = (RANK_MAP[square] == 7 && t == PLAYER_WHITE) || (RANK_MAP[square] == 2 && t == PLAYER_BLACK);
+    int can_move_1 = (VALID(square+(8*direction)) && !sq[square+(8*direction)] && !on_promote_sq);
     int can_move_2 = (
         can_move_1
         && VALID(square+(16*direction)) 
@@ -79,9 +81,13 @@ static int pawn_captures(Piece sq[], int square, Turn t, Move *m)
 {
     int i = 0, direction = t? 1 : -1;
     if (different_team(sq, square, square+(9*direction))) {
+        if (!(FILE_MAP[square] == 'a' && FILE_MAP[square+(9*direction)] == 'h') &&
+         !(FILE_MAP[square] == 'h' && FILE_MAP[square+(9*direction)] == 'a'))
         basic_move((m + i++), square, square + (9*direction), sq[square], sq[square+(9*direction)]);
     }
     if (different_team(sq, square, square+(7*direction))) {
+        if (!(FILE_MAP[square] == 'a' && FILE_MAP[square+(7*direction)] == 'h') &&
+         !(FILE_MAP[square] == 'h' && FILE_MAP[square+(7*direction)] == 'a'))
         basic_move((m + i++), square, square + (7*direction), sq[square], sq[square+(7*direction)]);
     }
     return i;
@@ -156,7 +162,8 @@ static int knight_moves(Piece sq[], int square, Move *m)
 
     for (j = 0; j < 8; j++) {
         int sqto = square + (knight_diffs[j][0]*8) + (knight_diffs[j][1]);
-        if (VALID(sqto) && (!sq[sqto] || different_team(sq, square, sqto))) {
+        if (!VALID(sqto)) continue;
+        if (!sq[sqto] || different_team(sq, square, sqto)) {
             int k, clipping = 0;
             for (k = 0; k < 6; k++) {
                 if (FILE_MAP[sqto] == bad_knight_jumps[k][0] && FILE_MAP[square] == bad_knight_jumps[k][1]) {
@@ -191,6 +198,10 @@ static int linewise_piece_moves(Piece sq[], int square, int diagonal, int upandd
 {
     int i = 0, j, k;
     int blockaded[] = {0, 0, 0, 0, 0, 0, 0, 0};
+    char onfile[] = {
+        FILE_MAP[square], FILE_MAP[square], FILE_MAP[square], FILE_MAP[square], 
+        FILE_MAP[square], FILE_MAP[square], FILE_MAP[square], FILE_MAP[square]
+    };
     for (k = 1; k < 8; k++) {
         int directions[8] = {
             square + k,
@@ -207,6 +218,17 @@ static int linewise_piece_moves(Piece sq[], int square, int diagonal, int upandd
             if (!diagonal && j > 3) continue;
             if (!upanddown && j < 4) continue;
             if (blockaded[j]) continue;
+
+            if (onfile[j] == 'a' && FILE_MAP[directions[j]] == 'h') {
+                blockaded[j] = 1;
+                continue;
+            }
+            if (onfile[j] == 'h' && FILE_MAP[directions[j]] == 'a') {
+                blockaded[j] = 1;
+                continue;
+            }
+
+            onfile[j] = FILE_MAP[directions[j]];
 
             blockaded[j] = sq[directions[j]] > 0;
             if ((blockaded[j] && different_team(sq, square, directions[j])) || !blockaded[j]) {
