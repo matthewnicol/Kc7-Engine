@@ -5,6 +5,6 @@ void make_random_move(Board *b, MoveSet *m)
     if (m->count > 0) {
         int randmove = rand()%m->count;
         printf("Picked random move: %i", randmove);
-        apply_move(b, m->moves+randmove);
+        apply_move(b->squares, m->moves+randmove);
     }
 }

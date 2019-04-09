@@ -1,20 +1,20 @@
 #define either(A,B,C)    (A == B || A == C)
 #define VALID(A)    (A >= 0 && A < 64)
 
-static int pawn_advances(Piece[], int, Turn, Move*);
-static int pawn_captures(Piece[], int, Turn, Move*);
-static int pawn_ep_captures(Piece[], int, Turn, Move*);
-static int pawn_promotions(Piece[], int, Turn, Move*);
-static int knight_moves(Piece[], int, Move*);
-static int king_moves(Piece[], int, Move*);
-static int king_castles(Piece[], int, Move*);
-static int linewise_piece_moves(Piece[], int, int, int, Move*);
+static int pawn_advances(Piece*, int, Turn, Move*);
+static int pawn_captures(Piece*, int, Turn, Move*);
+static int pawn_ep_captures(Piece*, int, Turn, Move*);
+static int pawn_promotions(Piece*, int, Turn, Move*);
+static int knight_moves(Piece*, int, Move*);
+static int king_moves(Piece*, int, Move*);
+static int king_castles(Piece*, int, Move*);
+static int linewise_piece_moves(Piece*, int, int, int, Move*);
 /*@null@*/ static MoveSet* make_moveset(int);
 static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
-static int moves_for_square(Piece[], int, Turn, Move*);
+static int moves_for_square(Piece*, int, Turn, Move*);
 
-MoveSet *all_legal_moves(Piece sq[], Turn t)
+MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
     int i;
     MoveSet *m = make_moveset(60);
@@ -38,25 +38,25 @@ MoveSet *all_legal_moves(Piece sq[], Turn t)
     return m;
 }
 
-int remove_moves_leading_to_illegal_positions(Board *b, MoveSet *m)
+int remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
 {
     int i;
-    Board *bcopy = copy_board(b);
-    assert(bcopy != NULL);
-    bcopy->turn = bcopy->turn == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
+    Piece *sqc = malloc(sizeof(Piece)*64);
+    for (i = 0; i < 64; i++) {
+        sqc[i] = sq[i];
+    }
 
     for (i = 0; i < m->count; i++) {
-        apply_move(bcopy, m->moves+i);
+        apply_move(sqc, m->moves+i);
 
-        reverse_move(bcopy, m->moves+i);
+        reverse_move(sqc, m->moves+i);
     }
-    free(bcopy->moves);
-    free(bcopy);
+    free(sqc);
     return m->count;
 
 }
 
-static int moves_for_square(Piece sq[], int square, Turn t, Move *m)
+static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
 {
     if ((t && is_white[sq[square]]) || (!t && is_black[sq[square]])) return 0;
     if (is_pawn[sq[square]]) {
@@ -83,7 +83,7 @@ static int moves_for_square(Piece sq[], int square, Turn t, Move *m)
     return 0;
 }
 
-static int pawn_advances(Piece sq[], int square, Turn t, Move *m)
+static int pawn_advances(Piece *sq, int square, Turn t, Move *m)
 {
     int i = 0, direction = t == PLAYER_BLACK? 1 : -1;
     int on_home_rank = (RANK_MAP[square] == 2 && t == PLAYER_WHITE) || (RANK_MAP[square] == 7 && t == PLAYER_BLACK);
@@ -106,7 +106,7 @@ static int pawn_advances(Piece sq[], int square, Turn t, Move *m)
     return i;
 }
 
-static int pawn_captures(Piece sq[], int square, Turn t, Move *m)
+static int pawn_captures(Piece *sq, int square, Turn t, Move *m)
 {
     int i = 0, direction = t? 1 : -1;
     if (different_team(sq, square, square+(9*direction))) {
@@ -122,7 +122,7 @@ static int pawn_captures(Piece sq[], int square, Turn t, Move *m)
     return i;
 }
 
-static int pawn_ep_captures(Piece sq[], int square, Turn t, Move *m)
+static int pawn_ep_captures(Piece *sq, int square, Turn t, Move *m)
 {
     int i = 0, direction = t? 1 : -1;
     Piece them = t? WHITE_EP_PAWN : BLACK_EP_PAWN;
@@ -150,7 +150,7 @@ static int pawn_ep_captures(Piece sq[], int square, Turn t, Move *m)
     return i;
 }
 
-static int pawn_promotions(Piece sq[], int square, Turn t, Move *m)
+static int pawn_promotions(Piece *sq, int square, Turn t, Move *m)
 {
 
     static Piece promotions[][4] = {
@@ -177,7 +177,7 @@ static int pawn_promotions(Piece sq[], int square, Turn t, Move *m)
 
 }
 
-static int knight_moves(Piece sq[], int square, Move *m)
+static int knight_moves(Piece *sq, int square, Move *m)
 {
     static int knight_diffs[][2] = {
         {-1, 2}, {1, 2}, {-1, -2}, {1, -2}, {2, -1}, {2, 1}, {-2, -1}, {-2, 1},
@@ -206,7 +206,7 @@ static int knight_moves(Piece sq[], int square, Move *m)
     return i;
 }
 
-static int king_moves(Piece sq[], int square, Move *m)
+static int king_moves(Piece *sq, int square, Move *m)
 {
     static int king_diffs[][2] = {
         {0, 1}, {0, -1}, {1, 1}, {1, -1}, {1, 0}, {-1, 1}, {-1, -1}, {-1, 0}
@@ -223,7 +223,7 @@ static int king_moves(Piece sq[], int square, Move *m)
     return i;
 }
 
-static int linewise_piece_moves(Piece sq[], int square, int diagonal, int upanddown, Move *m)
+static int linewise_piece_moves(Piece *sq, int square, int diagonal, int upanddown, Move *m)
 {
     int i = 0, j, k;
     int blockaded[] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -269,7 +269,7 @@ static int linewise_piece_moves(Piece sq[], int square, int diagonal, int upandd
 }
 
 
-static int king_castles(Piece sq[], int square, Move *m)
+static int king_castles(Piece *sq, int square, Move *m)
 {
     static Piece castling_king[] = {BLACK_CASTLING_KING, WHITE_CASTLING_KING};
     static Piece castling_rook[] = {BLACK_CASTLING_ROOK, WHITE_CASTLING_ROOK};

@@ -1,11 +1,19 @@
+/*@null@*/ Board *new_board();
 /*@null@*/ Board *copy_board(Board *);
 
-Board new_board() {
+Board *new_board() {
     int i;
-    Board b;
-    b.turn = PLAYER_WHITE;
-    b.count = 0;
-    for (i = 0; i < 64; i++) b.squares[i] = NO_PIECE;
+    Board *b = malloc(sizeof(Board));
+    if (b == NULL) {
+        return NULL;
+    }
+    b->squares = malloc(sizeof(Piece)*64);
+    if (b->squares == NULL) {
+        return NULL;
+    }
+    b->turn = PLAYER_WHITE;
+    b->count = 0;
+    for (i = 0; i < 64; i++) b->squares[i] = NO_PIECE;
     return b;
 }
 
@@ -14,6 +22,10 @@ Board *copy_board(Board *b)
     int i;
     Board *bcopy = malloc(sizeof(Board));
     if (bcopy == NULL) {
+        return NULL;
+    }
+    bcopy->squares = malloc(sizeof(Piece)*64);
+    if (bcopy->squares == NULL) {
         return NULL;
     }
     for (i = 0; i < 64; i++) {
@@ -76,37 +88,37 @@ void standard_position(Board *b)
     FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", b);
 }
 
-void apply_move(Board *b, Move *m)
+void apply_move(Piece *sq, Move *m)
 {
-    b->squares[m->to] = m->on_from;
-    b->squares[m->from] = NO_PIECE;
+    sq[m->to] = m->on_from;
+    sq[m->from] = NO_PIECE;
     if (m->side_effect == KS_CASTLE) {
-        b->squares[m->from+1] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
-        b->squares[m->to+1] = NO_PIECE;
+        sq[m->from+1] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
+        sq[m->to+1] = NO_PIECE;
     } else if (m->side_effect == QS_CASTLE) {
-        b->squares[m->from-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
-        b->squares[m->to+4] = NO_PIECE;
+        sq[m->from-2] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
+        sq[m->to+4] = NO_PIECE;
     } else if (m->side_effect == EP_CAPTURE) {
-        b->squares[m->to + (8 * (is_white[b->squares[m->to]] ? 1 : -1))] = NO_PIECE;
+        sq[m->to + (8 * (is_white[sq[m->to]] ? 1 : -1))] = NO_PIECE;
     } else if (m->side_effect == PROMOTION) {
         // this side effect is needed for reverse_move
     }
 }
 
-void reverse_move(Board *b, Move *m)
+void reverse_move(Piece *sq, Move *m)
 {
-    b->squares[m->from] = m->on_from;
-    b->squares[m->to] = m->on_to;
+    sq[m->from] = m->on_from;
+    sq[m->to] = m->on_to;
     if (m->side_effect == KS_CASTLE) {
-        b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
-        b->squares[m->to+1] = b->squares[m->from] == WHITE_CASTLING_KING? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
-        b->squares[m->to-1] = NO_PIECE;
+        sq[m->from] = sq[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
+        sq[m->to+1] = sq[m->from] == WHITE_CASTLING_KING? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
+        sq[m->to-1] = NO_PIECE;
     } else if (m->side_effect == QS_CASTLE) {
-        b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
-        b->squares[m->from-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
-        b->squares[m->to+1] = NO_PIECE;
+        sq[m->from] = sq[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
+        sq[m->from-2] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
+        sq[m->to+1] = NO_PIECE;
     } else if (m->side_effect == EP_CAPTURE) {
-        b->squares[m->to + (8 * (is_white[b->squares[m->to]] ? 1 : -1))] = b->squares[m->from] == WHITE_PAWN ? BLACK_EP_PAWN : WHITE_EP_PAWN;
+        sq[m->to + (8 * (is_white[sq[m->to]] ? 1 : -1))] = sq[m->from] == WHITE_PAWN ? BLACK_EP_PAWN : WHITE_EP_PAWN;
     } else if (m->side_effect == PROMOTION) {
         // this side effect is needed for reverse_move
     }

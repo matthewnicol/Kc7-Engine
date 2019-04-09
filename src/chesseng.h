@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
      Player turn; 
      int count;
-     Piece squares[64]; 
+     Piece *squares; 
     /*@out@*/ Move *moves;
 } Board;
 
