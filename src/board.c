@@ -9,6 +9,13 @@ Board *new_board() {
     }
     b->squares = malloc(sizeof(Piece)*64);
     if (b->squares == NULL) {
+        free(b);
+        return NULL;
+    }
+    b->moves = malloc(sizeof(Move));
+    if (b->moves == NULL) {
+        free(b->squares);
+        free(b);
         return NULL;
     }
     b->turn = PLAYER_WHITE;
@@ -26,6 +33,7 @@ Board *copy_board(Board *b)
     }
     bcopy->squares = malloc(sizeof(Piece)*64);
     if (bcopy->squares == NULL) {
+        free(bcopy);
         return NULL;
     }
     for (i = 0; i < 64; i++) {

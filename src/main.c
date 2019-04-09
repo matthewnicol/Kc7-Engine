@@ -18,6 +18,7 @@ int main ()
     }
 
     free(b->squares);
+    free(b->moves);
     free(b);
     exit(0);
 }

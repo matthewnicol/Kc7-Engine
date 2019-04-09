@@ -13,6 +13,8 @@ static int linewise_piece_moves(Piece*, int, int, int, Move*);
 static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
 static int moves_for_square(Piece*, int, Turn, Move*);
+static void remove_moves_leading_to_illegal_positions(Piece*, Turn, MoveSet*);
+static int locate_king(Piece*, Turn);
 
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
@@ -23,6 +25,8 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
     for (i = 0; i < 64; i++) {
         m->count += moves_for_square(sq, i, t, m->moves+m->count);
     }
+
+    remove_moves_leading_to_illegal_positions(sq, t, m);
     
     for (i = 0; i < m->count; i++) {
         printf(
@@ -38,22 +42,43 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
     return m;
 }
 
-int remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
+static void remove_moves_leading_to_illegal_positions(Piece *sq, Turn t, MoveSet *m)
 {
     int i;
     Piece *sqc = malloc(sizeof(Piece)*64);
+    assert(sq != NULL);
+    assert(sqc != NULL);
     for (i = 0; i < 64; i++) {
         sqc[i] = sq[i];
     }
 
     for (i = 0; i < m->count; i++) {
         apply_move(sqc, m->moves+i);
+        int kingpos = locate_king(sqc, t);
+        if (kingpos) {
+            reverse_move(sqc, m->moves+i);
+        } else {
+            reverse_move(sqc, m->moves+i);
+        }
 
-        reverse_move(sqc, m->moves+i);
     }
     free(sqc);
-    return m->count;
 
+
+}
+
+static int locate_king(Piece *sq, Turn t) {
+    int i;
+    for (i = 0; i < 64; i++) {
+        if (t == PLAYER_WHITE && (sq[i] == WHITE_KING || sq[i] == WHITE_CASTLING_KING)) {
+            return i;
+        }
+        if (t == PLAYER_BLACK && (sq[i] == BLACK_KING || sq[i] == BLACK_CASTLING_KING)) {
+            return i;
+        }
+        
+    }
+    return -1;
 }
 
 static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
