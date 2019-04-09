@@ -39,6 +39,21 @@ MoveSet *all_legal_moves(Piece sq[], Turn t)
     return m;
 }
 
+int remove_moves_leading_to_illegal_positions(Board *b, MoveSet *m)
+{
+    int i;
+    Board *bcopy = copy_board(b);
+    bcopy->turn = bcopy->turn == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
+
+    for (i = 0; i < m->count; i++) {
+        apply_move(bcopy, m->moves+i);
+
+        reverse_move(bcopy, m->moves+i);
+    }
+    return m->count;
+
+}
+
 int moves_for_square(Piece sq[], int square, Turn t, Move *m)
 {
     if ((t && is_white[sq[square]]) || (!t && is_black[sq[square]])) return 0;
