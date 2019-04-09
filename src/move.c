@@ -10,10 +10,9 @@ static int king_moves(Piece[], int, Move*);
 static int king_castles(Piece[], int, Move*);
 static int linewise_piece_moves(Piece[], int, int, int, Move*);
 /*@null@*/ static MoveSet* make_moveset(int);
-static void kill_moveset(MoveSet*);
 static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
-int moves_for_square(Piece[], int, Turn, Move*);
+static int moves_for_square(Piece[], int, Turn, Move*);
 
 MoveSet *all_legal_moves(Piece sq[], Turn t)
 {
@@ -43,6 +42,7 @@ int remove_moves_leading_to_illegal_positions(Board *b, MoveSet *m)
 {
     int i;
     Board *bcopy = copy_board(b);
+    assert(bcopy != NULL);
     bcopy->turn = bcopy->turn == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
 
     for (i = 0; i < m->count; i++) {
@@ -50,11 +50,13 @@ int remove_moves_leading_to_illegal_positions(Board *b, MoveSet *m)
 
         reverse_move(bcopy, m->moves+i);
     }
+    free(bcopy->moves);
+    free(bcopy);
     return m->count;
 
 }
 
-int moves_for_square(Piece sq[], int square, Turn t, Move *m)
+static int moves_for_square(Piece sq[], int square, Turn t, Move *m)
 {
     if ((t && is_white[sq[square]]) || (!t && is_black[sq[square]])) return 0;
     if (is_pawn[sq[square]]) {
@@ -315,14 +317,6 @@ static MoveSet *make_moveset(int size)
     }
 
     return mset;
-}
-
-static void kill_moveset(MoveSet* m)
-{
-    if (m != NULL) {
-       if (m->moves != NULL) free(m->moves);
-       free(m);
-    }
 }
 
 static void basic_move(Move *m, int from, int to, Piece on_from, Piece on_to)

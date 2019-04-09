@@ -1,3 +1,5 @@
+/*@null@*/ Board *copy_board(Board *);
+
 Board new_board() {
     int i;
     Board b;

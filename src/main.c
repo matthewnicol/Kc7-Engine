@@ -10,7 +10,8 @@ int main ()
         printBoard(b.squares);
         MoveSet *m = all_legal_moves(b.squares, b.turn);
         make_random_move(&b, m);
-        kill_moveset(m);
+        free(m->moves);
+        free(m);
         b.turn = !b.turn;
         //if ((char)getchar() == 'q') exit(0);
     }
