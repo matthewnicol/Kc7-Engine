@@ -18,7 +18,7 @@ int moves_for_square(Piece[], int, Turn, MoveSet*);
 MoveSet *all_legal_moves(Piece sq[], Turn t)
 {
     int i;
-    MoveSet *m = make_moveset(30);
+    MoveSet *m = make_moveset(60);
     assert(m != NULL);
     for (i = 0; i < 64; i++) {
         if ((t && is_white[sq[i]]) || (!t && is_black[sq[i]])) continue;
@@ -310,7 +310,7 @@ static MoveSet *make_moveset(int size)
     }
 
     Move *m = mset->moves;
-    for (i = 0; i < 30; i++) { 
+    for (i = 0; i < size; i++) { 
 
         m[i].from = -1;
         m[i].to = -1;
