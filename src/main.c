@@ -12,7 +12,7 @@ int main ()
         make_random_move(&b, m);
         kill_moveset(m);
         b.turn = !b.turn;
-        if ((char)getchar() == 'q') exit(0);
+        //if ((char)getchar() == 'q') exit(0);
     }
 
     exit(0);

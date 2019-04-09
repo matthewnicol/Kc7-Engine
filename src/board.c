@@ -85,6 +85,7 @@ void printBoard(Piece p[])
     char *black = "\033[1;31m";
     char *white = "\033[1;97m";
     char *sqnum = "\033[90m";
+    printf("\n");
     for (i = 0; i < 8; i++) {
        
         printf("\t|");
