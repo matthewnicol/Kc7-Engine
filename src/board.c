@@ -91,6 +91,25 @@ void apply_move(Board *b, Move *m)
     }
 }
 
+void reverse_move(Board *b, Move *m)
+{
+    b->squares[m->from] = m->on_from;
+    b->squares[m->to] = m->on_to;
+    if (m->side_effect == KS_CASTLE) {
+        b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
+        b->squares[m->to+1] = b->squares[m->from] == WHITE_CASTLING_KING? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
+        b->squares[m->to-1] = NO_PIECE;
+    } else if (m->side_effect == QS_CASTLE) {
+        b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
+        b->squares[m->from-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
+        b->squares[m->to+1] = NO_PIECE;
+    } else if (m->side_effect == EP_CAPTURE) {
+        b->squares[m->to + (8 * (is_white[b->squares[m->to]] ? 1 : -1))] = b->squares[m->from] == WHITE_PAWN ? BLACK_EP_PAWN : WHITE_EP_PAWN;
+    } else if (m->side_effect == PROMOTION) {
+        // this side effect is needed for reverse_move
+    }
+}
+
 #define RP(X)   (COLOUR_PIECE_MAP[p[X]])
 
 void printBoard(Piece p[])
