@@ -7,6 +7,21 @@ Board new_board() {
     return b;
 }
 
+Board *copy_board(Board *b)
+{
+    int i;
+    Board *bcopy = malloc(sizeof(Board));
+    if (bcopy == NULL) {
+        return NULL;
+    }
+    for (i = 0; i < 64; i++) {
+        bcopy->squares[i] = b->squares[i];
+    }
+    bcopy->turn = b->turn;
+    bcopy->count = b->count;
+    return bcopy;
+}
+
 void FEN(char *fen, Board *b) 
 {
     int i, sq = 0;
