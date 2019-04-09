@@ -13,6 +13,7 @@ static int linewise_piece_moves(Piece[], int, int, int, Move*);
 static void kill_moveset(MoveSet*);
 static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
+int moves_for_square(Piece[], int, Turn, MoveSet*);
 
 MoveSet *all_legal_moves(Piece sq[], Turn t)
 {
@@ -39,6 +40,10 @@ MoveSet *all_legal_moves(Piece sq[], Turn t)
             m->count += linewise_piece_moves(sq, i, 1, 1, m->moves+m->count);
         }
     }
+    
+    for (i = 0; i < m->count; i++) {
+    
+    }
 
     for (i = 0; i < m->count; i++) {
         printf(
@@ -52,6 +57,33 @@ MoveSet *all_legal_moves(Piece sq[], Turn t)
         );
     }
     return m;
+}
+
+int moves_for_square(Piece sq[], int square, Turn t, MoveSet *m)
+{
+    if ((t && is_white[sq[square]]) || (!t && is_black[sq[square]])) return 0;
+    if (is_pawn[sq[square]]) {
+        int movec = 0;
+        movec += pawn_advances(sq, square, t, m->moves+movec); 
+        movec += pawn_captures(sq, square, t, m->moves+movec);
+        movec += pawn_ep_captures(sq, square, t, m->moves+movec);
+        movec += pawn_promotions(sq, square, t, m->moves+movec);
+        return movec;
+    } else if (is_knight[sq[square]]) {
+        return knight_moves(sq, square, m->moves);
+    } else if (is_king[sq[square]]) {
+        int movec = 0;
+        movec += king_moves(sq, square, m->moves);
+        movec += king_castles(sq, square, m->moves+movec);
+        return movec;
+    } else if (is_bishop[sq[square]]) {
+        return linewise_piece_moves(sq, square, 1, 0, m->moves);
+    } else if (is_rook[sq[square]]) {
+        return linewise_piece_moves(sq, square, 0, 1, m->moves);
+    } else if (is_queen[sq[square]]) {
+        return linewise_piece_moves(sq, square, 1, 1, m->moves);
+    }
+    return 0;
 }
 
 static int pawn_advances(Piece sq[], int square, Turn t, Move *m)
