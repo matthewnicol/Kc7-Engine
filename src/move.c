@@ -15,6 +15,7 @@ static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect)
 static int moves_for_square(Piece*, int, Turn, Move*);
 static void remove_moves_leading_to_illegal_positions(Piece*, Turn, MoveSet*);
 static int locate_king(Piece*, Turn, int);
+static int square_is_attacked(Piece*, int);
 
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
@@ -44,26 +45,20 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
 
 static void remove_moves_leading_to_illegal_positions(Piece *sq, Turn t, MoveSet *m)
 {
-    int i;
-    int kingpos = -1;
-    Piece *sqc = malloc(sizeof(Piece)*64);
+    int i, k=0, kingpos = -1;
     assert(sq != NULL);
-    assert(sqc != NULL);
-    for (i = 0; i < 64; i++) {
-        sqc[i] = sq[i];
-    }
-
     for (i = 0; i < m->count; i++) {
-        apply_move(sqc, m->moves+i);
-        kingpos = locate_king(sqc, t, kingpos);
-        if (kingpos) {
-            reverse_move(sqc, m->moves+i);
+        apply_move(sq, m->moves+i);
+        kingpos = locate_king(sq, t, kingpos);
+        if (!square_is_attacked(sq, kingpos)) {
+            m->moves[k++] = m->moves[i];
         } else {
-            reverse_move(sqc, m->moves+i);
+            printf("Removing move -- Square %i (%i) TO Square %i (%i)\n",
+                    m->moves[i].from, m->moves[i].on_from, m->moves[i].to, m->moves[i].on_to);
         }
-
+        reverse_move(sq, m->moves+i);
     }
-    free(sqc);
+    m->count = k;
 
 
 }
@@ -77,6 +72,21 @@ static int locate_king(Piece *sq, Turn t, int last_known_pos) {
             return i;
     }
     return -1;
+}
+
+static int square_is_attacked(Piece *sq, int square)
+{
+    int i, j, k, attacker = !is_black[sq[square]];
+    Move *m = malloc(sizeof(Move)*45);
+    assert (m != NULL);
+    for (i = 0; i < 64; i++) {
+        if (i == square) continue;
+        k = moves_for_square(sq, i, attacker, m);
+        for (j = 0; j < k && m[j].to != square; j++); 
+        if (j < k) break;
+    }
+    free(m);
+    return j < k;
 }
 
 static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
