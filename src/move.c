@@ -1,4 +1,4 @@
-#define either(A,B,C)    (A == B || A == C)
+#define EITHER(A,B,C)    (A == B || A == C)
 #define VALID(A)    (A >= 0 && A < 64)
 
 static int pawn_advances(Piece*, int, Turn, Move*);
@@ -14,7 +14,7 @@ static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
 static int moves_for_square(Piece*, int, Turn, Move*);
 static void remove_moves_leading_to_illegal_positions(Piece*, Turn, MoveSet*);
-static int locate_king(Piece*, Turn);
+static int locate_king(Piece*, Turn, int);
 
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
@@ -45,6 +45,7 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
 static void remove_moves_leading_to_illegal_positions(Piece *sq, Turn t, MoveSet *m)
 {
     int i;
+    int kingpos = -1;
     Piece *sqc = malloc(sizeof(Piece)*64);
     assert(sq != NULL);
     assert(sqc != NULL);
@@ -54,7 +55,7 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, Turn t, MoveSet
 
     for (i = 0; i < m->count; i++) {
         apply_move(sqc, m->moves+i);
-        int kingpos = locate_king(sqc, t);
+        kingpos = locate_king(sqc, t, kingpos);
         if (kingpos) {
             reverse_move(sqc, m->moves+i);
         } else {
@@ -67,16 +68,13 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, Turn t, MoveSet
 
 }
 
-static int locate_king(Piece *sq, Turn t) {
+static int locate_king(Piece *sq, Turn t, int last_known_pos) {
+    if (last_known_pos > -1 && EITHER(sq[last_known_pos], MYPIECE(t, KING), MYPIECE(t, CASTLING_KING)))
+        return last_known_pos;
     int i;
     for (i = 0; i < 64; i++) {
-        if (t == PLAYER_WHITE && (sq[i] == WHITE_KING || sq[i] == WHITE_CASTLING_KING)) {
+        if (EITHER(sq[i], MYPIECE(t, KING), MYPIECE(t, CASTLING_KING)))
             return i;
-        }
-        if (t == PLAYER_BLACK && (sq[i] == BLACK_KING || sq[i] == BLACK_CASTLING_KING)) {
-            return i;
-        }
-        
     }
     return -1;
 }

@@ -44,6 +44,7 @@ typedef struct {
     /*@out@*/ Move *moves;
 } Board;
 
+#define MYPIECE(T, P) (T? BLACK_ ## P : WHITE_ ## P)
 
 
 static char FILE_MAP[] = {
