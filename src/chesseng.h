@@ -5,6 +5,11 @@
 #include <time.h>
 #include <assert.h>
 
+/* ########################
+ *  DATA STRUCTURES
+ * ########################
+ */
+
 #include "structures.c"     /* Typedefs for board, Move, etc etc */
 
 /* ########################
@@ -12,9 +17,14 @@
  * ########################
  */
 
-//Move
+// move.c
+
 int square_is_attacked(Piece *, int);
 
+// ai.c
+
+void make_random_move(Board*, MoveSet*);
+float evaluate(Board*, MoveSet*);
 
 /* ########################
  *  HELPERS TO BE MOVED
@@ -60,6 +70,11 @@ int algebraic_to_sq(char file, char rank)
 {
     return (int)(file - 'a') + ((int)(rank - '0') * 8);
 }
+
+/* ########################
+ *  OUR CODE
+ * ########################
+ */
 
 #include "fens.c"   /* Define some positions useful for testing */
 #include "board.c"  /* Creating, Destroying & asking q about boards */
