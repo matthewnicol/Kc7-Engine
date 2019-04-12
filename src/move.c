@@ -1,5 +1,6 @@
 #define EITHER(A,B,C)    (A == B || A == C)
 #define VALID(A)    (A >= 0 && A < 64)
+#define COLOURCOND(C, T, W, B) (T? C == B : C == W)
 
 static int pawn_advances(Piece*, int, Turn, Move*);
 static int pawn_captures(Piece*, int, Turn, Move*);
@@ -13,21 +14,31 @@ static int linewise_piece_moves(Piece*, int, int, int, Move*);
 static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
 static int moves_for_square(Piece*, int, Turn, Move*);
-static void remove_moves_leading_to_illegal_positions(Piece*, Turn, MoveSet*);
-static int locate_king(Piece*, Turn, int);
+static void remove_moves_leading_to_illegal_positions(Piece*, MoveSet*);
 static int square_is_attacked(Piece*, int);
 
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
     int i;
     MoveSet *m = make_moveset(60);
+    m->king_pos = -1;
     assert(m != NULL);
 
     for (i = 0; i < 64; i++) {
+        // Add to list of moves we can perform in this position
         m->count += moves_for_square(sq, i, t, m->moves+m->count);
+        // Record king position if this is our king
+        if (m->king_pos == -1 && EITHER(sq[i], MYPIECE(t, CASTLING_KING), MYPIECE(t, KING))) m->king_pos = i;
     }
 
-    remove_moves_leading_to_illegal_positions(sq, t, m);
+    // Something is wrong with the board if we don't have a valid king position
+    if (m->king_pos == -1) {
+        free(m->moves);
+        free(m);
+        exit(-1);
+    }
+
+    remove_moves_leading_to_illegal_positions(sq, m);
     
     for (i = 0; i < m->count; i++) {
         printf(
@@ -43,14 +54,15 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
     return m;
 }
 
-static void remove_moves_leading_to_illegal_positions(Piece *sq, Turn t, MoveSet *m)
+static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
 {
-    int i, k=0, kingpos = -1;
+    int i, k=0;
     assert(sq != NULL);
     for (i = 0; i < m->count; i++) {
         apply_move(sq, m->moves+i);
-        kingpos = locate_king(sq, t, kingpos);
-        if (!square_is_attacked(sq, kingpos)) {
+        if (!square_is_attacked(sq, 
+                    // Possibly moved king
+                    is_king[sq[m->moves[i].to]] ? m->moves[i].to : m->king_pos)) {
             m->moves[k++] = m->moves[i];
         } else {
             printf("Removing move -- Square %i (%i) TO Square %i (%i)\n",
@@ -61,17 +73,6 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, Turn t, MoveSet
     m->count = k;
 
 
-}
-
-static int locate_king(Piece *sq, Turn t, int last_known_pos) {
-    if (last_known_pos > -1 && EITHER(sq[last_known_pos], MYPIECE(t, KING), MYPIECE(t, CASTLING_KING)))
-        return last_known_pos;
-    int i;
-    for (i = 0; i < 64; i++) {
-        if (EITHER(sq[i], MYPIECE(t, KING), MYPIECE(t, CASTLING_KING)))
-            return i;
-    }
-    return -1;
 }
 
 static int square_is_attacked(Piece *sq, int square)
@@ -119,8 +120,9 @@ static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
 static int pawn_advances(Piece *sq, int square, Turn t, Move *m)
 {
     int i = 0, direction = t == PLAYER_BLACK? 1 : -1;
-    int on_home_rank = (RANK_MAP[square] == 2 && t == PLAYER_WHITE) || (RANK_MAP[square] == 7 && t == PLAYER_BLACK);
-    int on_promote_sq = (RANK_MAP[square] == 7 && t == PLAYER_WHITE) || (RANK_MAP[square] == 2 && t == PLAYER_BLACK);
+    int on_home_rank = COLOURCOND(RANK_MAP[square], t, 2, 7);
+    int on_promote_sq = COLOURCOND(RANK_MAP[square], t, 7, 2);
+
     int can_move_1 = (VALID(square+(8*direction)) && !sq[square+(8*direction)] && !on_promote_sq);
     int can_move_2 = (
         can_move_1

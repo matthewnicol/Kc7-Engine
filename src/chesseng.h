@@ -34,6 +34,7 @@ typedef struct {
 // Bundle up count of moves with the actual moves
 typedef struct {
     int count;
+    int king_pos;
     Move *moves;
 } MoveSet;
 
