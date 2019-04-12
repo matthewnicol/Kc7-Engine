@@ -15,7 +15,6 @@ static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
 static int moves_for_square(Piece*, int, Turn, Move*);
 static void remove_moves_leading_to_illegal_positions(Piece*, MoveSet*);
-static int square_is_attacked(Piece*, int);
 
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
@@ -75,7 +74,7 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
 
 }
 
-static int square_is_attacked(Piece *sq, int square)
+int square_is_attacked(Piece *sq, int square)
 {
     int i, j, k, attacker = !is_black[sq[square]];
     Move *m = malloc(sizeof(Move)*45);
