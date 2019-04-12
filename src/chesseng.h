@@ -130,6 +130,7 @@ int algebraic_to_sq(char file, char rank)
     return (int)(file - 'a') + ((int)(rank - '0') * 8);
 }
 
+#include "fens.c"
 #include "board.c"
 #include "move.c"
 #include "ai.c"
