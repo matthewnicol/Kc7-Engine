@@ -44,6 +44,11 @@ Board *copy_board(Board *b)
     return bcopy;
 }
 
+int is_checkmate(Piece *sq, MoveSet *m)
+{
+   return m->count == 0 && square_is_attacked(sq, m->king_pos);
+}
+
 void FEN(char *fen, Board *b) 
 {
     int i, sq = 0;
