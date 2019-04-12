@@ -23,3 +23,34 @@ float evaluate(Board *b, MoveSet *m)
     }
     return piece_scores + (bishops[0] == 2 ? .5 : 0.0) + (bishops[1] == 2 ? -.5 : 0.0);
 }
+
+float minmax(Board *b, int depth)
+{
+    MoveSet *m = all_legal_moves(b->squares, b->turn);
+    float result = 1000.0, tmp = 0.0;
+
+    if (depth == 0) {
+        result = evaluate(b, m);
+        free(m);
+        return result;
+    } else {
+        b->turn = !b->turn;
+        int i;
+        for (i = 0; i < m->count; i++) {
+            apply_move(b->squares, &m->moves[i]);
+            if (result == 1000) {
+                result = minmax(b, depth-1);
+            } else {
+                tmp = minmax(b, depth-1);
+                if ((b->turn && tmp < result) || (b->turn && tmp > result)) {
+                    result = tmp;
+                }
+            }
+            reverse_move(b->squares, &m->moves[i]);
+        }
+    }
+        
+    free(m);
+    b->turn = !b->turn;
+    return result;
+}
