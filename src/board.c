@@ -49,6 +49,11 @@ int is_checkmate(Piece *sq, MoveSet *m)
    return m->count == 0 && square_is_attacked(sq, m->king_pos);
 }
 
+int is_stalemate(Piece *sq, MoveSet *m)
+{
+   return m->count == 0 && !square_is_attacked(sq, m->king_pos);
+}
+
 void FEN(char *fen, Board *b) 
 {
     int i, sq = 0;
