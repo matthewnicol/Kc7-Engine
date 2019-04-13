@@ -1,6 +1,9 @@
-#define EITHER(A,B,C)    (A == B || A == C)
+#define EITHER(A,B,C)    ((A == B || A == C))
 #define VALID(A)    (A >= 0 && A < 64)
 #define COLOURCOND(C, T, W, B) (T? C == B : C == W)
+#define OPPONENTS(S, A, B) ((is_white[S[A]] && is_black[S[B]]) || (is_black[S[A]] && is_white[S[B]]))
+
+
 
 static int pawn_advances(Piece*, int, Turn, Move*);
 static int pawn_captures(Piece*, int, Turn, Move*);
@@ -11,11 +14,11 @@ static int king_moves(Piece*, int, Move*);
 static int king_castles(Piece*, int, Move*);
 static int linewise_piece_moves(Piece*, int, int, int, Move*);
 /*@null@*/ static MoveSet* make_moveset(int);
-static void basic_move(/*@temp@*/ Move*, int, int, Piece, Piece);
-static void move_with_side_effect(/*@temp@*/ Move*, int, int, Piece, Piece, MoveSideEffect);
-static int moves_for_square(/*@temp@*/Piece*, int, Turn, /*@dependent@*/ Move*);
+static void basic_move(Move*, int, int, Piece, Piece);
+static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
+static int moves_for_square(Piece*, int, Turn, Move*);
 static void remove_moves_leading_to_illegal_positions(Piece*, /*@dependent@*/ MoveSet*);
-/*@only@*/ MoveSet *all_legal_moves(Piece *sq, Turn t);
+MoveSet *all_legal_moves(Piece *sq, Turn t);
 
 void printMove(int movenum, Move *m) {
     printf(
@@ -27,6 +30,12 @@ void printMove(int movenum, Move *m) {
         (int)((m)->on_to),
         (m)->on_to ? "(CAPTURE)" : ""
     );
+}
+
+void printAllMoves(MoveSet *m) {
+    for (int i = 0; i < m->count; i++) {
+        printMove(i, m->moves+i);
+    }
 }
 
 MoveSet *all_legal_moves(Piece *sq, Turn t)
@@ -78,8 +87,7 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
 int square_is_attacked(Piece *sq, int square)
 {
     int i, j, k, attacker = !is_black[sq[square]];
-    Move *m = malloc(sizeof(Move)*45);
-    assert (m != NULL);
+    Move *m = malloc(sizeof(Move)*30);
     for (i = 0; i < 64; i++) {
         if (i == square) continue;
         k = moves_for_square(sq, i, attacker, m);
@@ -90,7 +98,7 @@ int square_is_attacked(Piece *sq, int square)
     return j < k;
 }
 
-static int moves_for_square(Piece *sq, int square, Turn t, /*@dependent@*/ Move *m)
+static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
 {
     if ((t && is_white[sq[square]]) || (!t && is_black[sq[square]])) return 0;
     if (is_pawn[sq[square]]) {
@@ -119,40 +127,29 @@ static int moves_for_square(Piece *sq, int square, Turn t, /*@dependent@*/ Move 
 
 static int pawn_advances(Piece *sq, int square, Turn t, Move *m)
 {
-    int i = 0, direction = t == PLAYER_BLACK? 1 : -1;
+    int i = 0;
+    int direction = t == PLAYER_BLACK? 1 : -1;
     int on_home_rank = COLOURCOND(RANK_MAP[square], t, 2, 7);
-    int on_promote_sq = COLOURCOND(RANK_MAP[square], t, 7, 2);
 
-    int can_move_1 = (VALID(square+(8*direction)) && !sq[square+(8*direction)] && !on_promote_sq);
-    int can_move_2 = (
-        can_move_1
-        && VALID(square+(16*direction)) 
-        && on_home_rank
-        && !sq[square+(16*direction)]
-    );
-
-    if (can_move_1) {
-        basic_move((m + i++), square, square + (8*direction), sq[square], NO_PIECE);
+    int dst[] = {square+(8*direction), square+(16*direction)};
+    for (int k = 0; k < 2; k++) {
+        if (!VALID(dst[k]) || sq[dst[k]] || (k == 1 && !on_home_rank)) { return i; }
+        basic_move((m+i++), square, dst[k], sq[square], sq[dst[k]]);
     }
-
-    if (can_move_2) {
-        basic_move((m + i++), square, square + (16*direction), sq[square], NO_PIECE);
-    } 
     return i;
 }
 
 static int pawn_captures(Piece *sq, int square, Turn t, Move *m)
 {
-    int i = 0, direction = t? 1 : -1;
-    if (VALID(square+(9*direction)) && different_team(sq, square, square+(9*direction))) {
-        if (!(FILE_MAP[square] == 'a' && FILE_MAP[square+(9*direction)] == 'h') &&
-         !(FILE_MAP[square] == 'h' && FILE_MAP[square+(9*direction)] == 'a'))
-        basic_move((m + i++), square, square + (9*direction), sq[square], sq[square+(9*direction)]);
-    }
-    if (VALID(square+(7*direction)) && different_team(sq, square, square+(7*direction))) {
-        if (!(FILE_MAP[square] == 'a' && FILE_MAP[square+(7*direction)] == 'h') &&
-         !(FILE_MAP[square] == 'h' && FILE_MAP[square+(7*direction)] == 'a'))
-        basic_move((m + i++), square, square + (7*direction), sq[square], sq[square+(7*direction)]);
+    int i = 0;
+    int direction = t == PLAYER_WHITE ? -1 : 1;
+    int differentials[] = {7, 9};
+    for (int k = 0; k < 2; k++) {
+        int dst = square+(differentials[k]*direction);
+        if (VALID(dst) && OPPONENTS(sq, square, dst)) {
+            if (EITHER(FILE_MAP[square], 'a', 'h') && EITHER(FILE_MAP[dst], 'a', 'h')) continue;
+            basic_move((m + i++), square, dst, sq[square], sq[dst]);
+        }
     }
     return i;
 }
@@ -160,27 +157,13 @@ static int pawn_captures(Piece *sq, int square, Turn t, Move *m)
 static int pawn_ep_captures(Piece *sq, int square, Turn t, Move *m)
 {
     int i = 0, direction = t? 1 : -1;
-    Piece them = t? WHITE_EP_PAWN : BLACK_EP_PAWN;
-    char ep1_file = t? 'a' : 'h';
-    char ep2_file = t? 'h' : 'a';
-
-    if (sq[square+(-1*direction)] == them && FILE_MAP[square+(-1*direction)] != ep1_file) {
-        move_with_side_effect(
-            (m + i++), 
-            square, 
-            square + (9*direction), 
-            sq[square], 
-            sq[square+(9*direction)],
-            EP_CAPTURE);
-    }
-    if (sq[square+(1*direction)] == them && FILE_MAP[square+(1*direction)] != ep2_file) {
-        move_with_side_effect(
-            (m + i++), 
-            square, 
-            square + (7*direction), 
-            sq[square], 
-            sq[square+(7*direction)],
-            EP_CAPTURE);
+    int differentials[] = {square+direction*7, square+direction*9};
+    int epsq[] = {square-1*direction, square+1*direction};
+    for (int k = 0; k < 2; k++) { 
+        if (EITHER(FILE_MAP[square], 'a', 'h') && EITHER(FILE_MAP[epsq[k]], 'a', 'h')) continue;
+        if (VALID(differentials[k]) && is_black[sq[square]] ? sq[epsq[k]] == WHITE_EP_PAWN : sq[epsq[k]] == BLACK_EP_PAWN) {
+            move_with_side_effect((m + i++), square, differentials[k], sq[square], sq[differentials[k]], EP_CAPTURE); 
+        }
     }
     return i;
 }
