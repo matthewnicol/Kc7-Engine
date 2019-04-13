@@ -67,9 +67,6 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
                     // Possibly moved king
                     is_king[sq[m->moves[i].to]] ? m->moves[i].to : m->king_pos)) {
             m->moves[k++] = m->moves[i];
-        } else {
-            printf("Removing move -- Square %i (%i) TO Square %i (%i)\n",
-                    m->moves[i].from, m->moves[i].on_from, m->moves[i].to, m->moves[i].on_to);
         }
         reverse_move(sq, m->moves+i);
     }
