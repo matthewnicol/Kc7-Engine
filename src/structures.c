@@ -24,6 +24,12 @@ typedef struct {
     MoveSideEffect side_effect;
 } Move;
 
+typedef struct {
+    double evaluation;
+    Move *move;
+} EvaluatedMove;
+
+
 // Bundle up count of moves with the actual moves
 typedef struct {
     int count;
@@ -69,7 +75,7 @@ static char COLOUR_PIECE_MAP[] = {
     'P', 'P', 'R', 'R', 'K', 'K', 'N', 'B', 'Q'
 };
 
-static int PIECE_VALUE_MAP[] = { 
+static double PIECE_VALUE_MAP[] = { 
     0, 
     -1.0, -1.0, -5.5, -5.0, 0.0, 0.0, -3, -3.0, -9.0, 
     1.0, 1.0, 5.0, 5.5, 0.0, 0.0, 3.0, 3.0, -9.0
