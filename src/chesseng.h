@@ -24,7 +24,7 @@ int square_is_attacked(Piece *, int);
 // ai.c
 
 void make_random_move(Board*, MoveSet*);
-float evaluate(Board*, MoveSet*);
+double evaluate(Board*, MoveSet*);
 
 /* ########################
  *  HELPERS TO BE MOVED
@@ -32,17 +32,19 @@ float evaluate(Board*, MoveSet*);
  */
 
 /* Does a board have the same side's piece in sq1 and sq2 */
-int same_team(Piece p[], int sq1, int sq2) 
+int same_team(Piece *p, int sq1, int sq2) 
 {
+    assert(sq1 > -1 && sq1 < 64);
+    assert(sq2 > -1 && sq2 < 64);
     return (is_black[p[sq1]] && is_black[p[sq2]]) || (is_white[p[sq1]] && is_white[p[sq2]]);
 }
 
 /* Does a board have opponent pieces in sq1 and sq2? */
-bool different_team(Piece p[], int sq1, int sq2) 
+bool different_team(Piece *p, int sq1, int sq2) 
 {
-    int s1 = p[sq1];
-    int s2 = p[sq2];
-    return (is_black[s1] && is_white[s2]) || (is_white[s1] && is_black[s2]);
+    assert(sq1 > -1 && sq1 < 64);
+    assert(sq2 > -1 && sq2 < 64);
+    return (is_black[p[sq1]] && is_white[p[sq2]]) || (is_white[p[sq1]] && is_black[p[sq2]]);
 }
 
 /* What piece does this char refer to? */
