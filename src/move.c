@@ -143,12 +143,12 @@ static int pawn_advances(Piece *sq, int square, Turn t, Move *m)
 static int pawn_captures(Piece *sq, int square, Turn t, Move *m)
 {
     int i = 0, direction = t? 1 : -1;
-    if (different_team(sq, square, square+(9*direction))) {
+    if (VALID(square+(9*direction)) && different_team(sq, square, square+(9*direction))) {
         if (!(FILE_MAP[square] == 'a' && FILE_MAP[square+(9*direction)] == 'h') &&
          !(FILE_MAP[square] == 'h' && FILE_MAP[square+(9*direction)] == 'a'))
         basic_move((m + i++), square, square + (9*direction), sq[square], sq[square+(9*direction)]);
     }
-    if (different_team(sq, square, square+(7*direction))) {
+    if (VALID(square+(7*direction)) && different_team(sq, square, square+(7*direction))) {
         if (!(FILE_MAP[square] == 'a' && FILE_MAP[square+(7*direction)] == 'h') &&
          !(FILE_MAP[square] == 'h' && FILE_MAP[square+(7*direction)] == 'a'))
         basic_move((m + i++), square, square + (7*direction), sq[square], sq[square+(7*direction)]);
