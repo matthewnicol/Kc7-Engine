@@ -11,16 +11,28 @@ static int king_moves(Piece*, int, Move*);
 static int king_castles(Piece*, int, Move*);
 static int linewise_piece_moves(Piece*, int, int, int, Move*);
 /*@null@*/ static MoveSet* make_moveset(int);
-static void basic_move(Move*, int, int, Piece, Piece);
-static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
-static int moves_for_square(Piece*, int, Turn, Move*);
-static void remove_moves_leading_to_illegal_positions(Piece*, MoveSet*);
+static void basic_move(/*@temp@*/ Move*, int, int, Piece, Piece);
+static void move_with_side_effect(/*@temp@*/ Move*, int, int, Piece, Piece, MoveSideEffect);
+static int moves_for_square(/*@temp@*/Piece*, int, Turn, /*@dependent@*/ Move*);
+static void remove_moves_leading_to_illegal_positions(Piece*, /*@dependent@*/ MoveSet*);
+/*@only@*/ MoveSet *all_legal_moves(Piece *sq, Turn t);
+
+void printMove(int movenum, Move *m) {
+    printf(
+        "Mv%2i: SQ %i (piece %i) to SQ %i (piece %i) %s\n", 
+        movenum,
+        (int)((m)->from),
+        (int)((m)->on_from),
+        (int)((m)->to),
+        (int)((m)->on_to),
+        (m)->on_to ? "(CAPTURE)" : ""
+    );
+}
 
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
     int i;
     MoveSet *m = make_moveset(60);
-    m->king_pos = -1;
     assert(m != NULL);
 
     for (i = 0; i < 64; i++) {
@@ -34,21 +46,13 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
     if (m->king_pos == -1) {
         free(m->moves);
         free(m);
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     remove_moves_leading_to_illegal_positions(sq, m);
     
     for (i = 0; i < m->count; i++) {
-        printf(
-            "Mv%2i: SQ %i (piece %i) to SQ %i (piece %i) %s\n", 
-            i,
-            (int)((m->moves+i)->from),
-            (int)((m->moves+i)->on_from),
-            (int)((m->moves+i)->to),
-            (int)((m->moves+i)->on_to),
-            (m->moves+i)->on_to ? "(CAPTURE)" : ""
-        );
+    //    printMove(i, m->moves+i);
     }
     return m;
 }
@@ -82,14 +86,14 @@ int square_is_attacked(Piece *sq, int square)
     for (i = 0; i < 64; i++) {
         if (i == square) continue;
         k = moves_for_square(sq, i, attacker, m);
-        for (j = 0; j < k && m[j].to != square; j++); 
+        for (j = 0; j < k && m+j != NULL && m[j].to != square; j++); 
         if (j < k) break;
     }
     free(m);
     return j < k;
 }
 
-static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
+static int moves_for_square(Piece *sq, int square, Turn t, /*@dependent@*/ Move *m)
 {
     if ((t && is_white[sq[square]]) || (!t && is_black[sq[square]])) return 0;
     if (is_pawn[sq[square]]) {
@@ -331,7 +335,7 @@ static MoveSet *make_moveset(int size)
 
     MoveSet *mset = malloc(sizeof (MoveSet));
     if (mset == NULL) return NULL;
-
+    mset->king_pos = -1;
     mset->count = 0;
     mset->moves = malloc (sizeof(Move) * size);
 
