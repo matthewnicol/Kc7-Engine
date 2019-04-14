@@ -59,7 +59,7 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
         + center_scores
         + center_scores_opp
         + choice_scores;
-
+#if 0
     printBoard(sq);
     printf("Deciding: %s\n", WHITEBLACK_VAL(p, "WHITE", "BLACK"));
     printf("Piece Scores (AGGREGATED): %f\n", piece_scores);
@@ -69,14 +69,10 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
     printf("Bishop Scores (WHITE): %f\n", bishops[0] == 2 ? .5 : 0.0);
     printf("Bishop Scores (BLACK): %f\n", bishops[1] == 2 ? -.5 : 0.0);
     printf("\nTotal Evaluation: %f\n", total_eval);
-
     exit(0);
-    return piece_scores 
-        + (bishops[0] == 2 ? .5 : 0.0) 
-        + (bishops[1] == 2 ? -.5 : 0.0) 
-        + center_scores
-        + center_scores_opp
-        + choice_scores;
+#endif
+
+    return total_eval;
 }
 
 #define SEARCHDEPTH 2
