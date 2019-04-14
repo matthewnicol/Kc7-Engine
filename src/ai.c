@@ -1,3 +1,5 @@
+#define MAX(A, B) (A > B ? A : B)
+#define MIN(A, B) (A < B ? A : B)
 void make_random_move(Board *b, MoveSet *m)
 {
     time_t t;
@@ -12,7 +14,6 @@ void make_random_move(Board *b, MoveSet *m)
 #define WHITEBLACK_VAL(T, A, B) (T == PLAYER_WHITE ? A : B)
 #define DEFAULT_EVAL(T) WHITEBLACK_VAL(T, -1000.00, 1000.00)
 
-
 int square_value[] = {
     0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,
@@ -26,12 +27,12 @@ int square_value[] = {
 
 double evaluate(Piece *sq, MoveSet *m, Player p) 
 {
-    MoveSet *m_opp = all_legal_moves(sq, p);
     if (is_checkmate(sq, m)) {
         return WHITEBLACK_VAL(p, -1000.00, 1000.00);
     } else if (is_stalemate(sq, m)) {
         return 0.0;
     }
+    MoveSet *m_opp = all_legal_moves(sq, p);
     int i; 
     double piece_scores = 0.0;
     double center_scores = 0.0;
@@ -53,6 +54,8 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
     for (i = 0; i < m_opp->count; i++) {
         center_scores_opp += (square_value[(m_opp->moves+i)->to] * 0.25 * (WHITEBLACK_VAL(TOGGLE(p), 1, -1)));
     }
+    free(m_opp->moves);
+    free(m_opp);
     double total_eval =piece_scores 
         + (bishops[0] == 2 ? .5 : 0.0) 
         + (bishops[1] == 2 ? -.5 : 0.0) 
@@ -78,9 +81,13 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
 #define SEARCHDEPTH 2
 #define BETTER_EVAL(T, A, B) ((T == PLAYER_WHITE && A > B) || (T == PLAYER_BLACK && A < B))
 
+// Alpha = best already explored option along the path to the root for the maximizer
+// Beta = best already explored option along the path to the root for the minimizer
+
 Move minimax_choice(Piece *sq, MoveSet *m, Player p)
 {
     Move choice;
+    double alpha = -1000.00, beta = 1000.00;
     double 
         tmp_evaluation,
         best_evaluation = DEFAULT_EVAL(p);
@@ -88,11 +95,14 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
     for (int i = 0; i < m->count; i++) {
 
         apply_move(sq, (m->moves+i));
-        tmp_evaluation = minimax(sq, SEARCHDEPTH, TOGGLE(p));
+        tmp_evaluation = minimax(sq, SEARCHDEPTH, TOGGLE(p), alpha, beta);
         reverse_move(sq, (m->moves+i));
         
         if (BETTER_EVAL(p, tmp_evaluation, best_evaluation)) {
             best_evaluation = tmp_evaluation;
+            alpha = WHITEBLACK_VAL(p, best_evaluation, alpha);
+            beta = WHITEBLACK_VAL(p, beta, best_evaluation);
+            alpha = best_evaluation;
             choice.to = (m->moves+i)->to;
             choice.from = (m->moves+i)->from;
             choice.on_to = (m->moves+i)->on_to;
@@ -104,13 +114,15 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
     return choice;
 }
 
-double minimax(Piece *sq, int depth, Player p)
+double minimax(Piece *sq, int depth, Player p, double alpha, double beta)
 {
     MoveSet *m = all_legal_moves(sq, p);
     if (is_checkmate(sq, m)) {
+        free(m->moves);
         free(m);
         return WHITEBLACK_VAL(p, -1000.00, 1000.00);
     } else if (is_stalemate(sq, m)) {
+        free(m->moves);
         free(m);
         return 0.0;
     }
@@ -122,8 +134,15 @@ double minimax(Piece *sq, int depth, Player p)
         best_evaluation = evaluate(sq, m, p);
     } else {
         for (int i = 0; i < m->count; i++) {
+            if (WHITEBLACK_VAL(p, best_evaluation > alpha, best_evaluation < beta)) break;
             apply_move(sq, m->moves+i);
-            tmp_evaluation = minimax(sq, depth-1, TOGGLE(p));
+            tmp_evaluation = minimax(
+                    sq, 
+                    depth-1, 
+                    TOGGLE(p), 
+                    WHITEBLACK_VAL(p, MAX(alpha, best_evaluation), alpha),
+                    WHITEBLACK_VAL(p, MIN(beta, best_evaluation), beta)
+            );
             reverse_move(sq, m->moves+i);
 
             if (WHITEBLACK_VAL(p, (tmp_evaluation > best_evaluation), (tmp_evaluation < best_evaluation))) {

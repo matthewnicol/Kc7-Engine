@@ -26,7 +26,7 @@ int square_is_attacked(Piece *, int);
 void make_random_move(Board*, MoveSet*);
 double evaluate(Piece*, MoveSet*, Player);
 Move minimax_choice(Piece*, MoveSet*, Player);
-double minimax(Piece*, int, Player);
+double minimax(Piece*, int, Player, double, double);
 
 /* ########################
  *  HELPERS TO BE MOVED
