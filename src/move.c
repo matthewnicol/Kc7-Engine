@@ -1,8 +1,3 @@
-#define EITHER(A,B,C)    ((A == B || A == C))
-#define VALID(A)    (A >= 0 && A < 64)
-#define COLOURCOND(C, T, W, B) (T? C == B : C == W)
-#define OPPONENTS(S, A, B) ((is_white[S[A]] && is_black[S[B]]) || (is_black[S[A]] && is_white[S[B]]))
-#define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
 
 
 static int pawn_advances(Piece*, int, Turn, Move*);
@@ -76,8 +71,6 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
         reverse_move(sq, m->moves+i);
     }
     m->count = k;
-
-
 }
 
 int square_is_attacked(Piece *sq, int square)

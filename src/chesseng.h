@@ -81,6 +81,11 @@ int algebraic_to_sq(char file, char rank)
  */
 
 #define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
+#define EITHER(A,B,C)    ((A == B || A == C))
+#define VALID(A)    (A >= 0 && A < 64)
+#define COLOURCOND(C, T, W, B) (T? C == B : C == W)
+#define OPPONENTS(S, A, B) ((is_white[S[A]] && is_black[S[B]]) || (is_black[S[A]] && is_white[S[B]]))
+#define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
 
 /* ########################
  *  OUR CODE
