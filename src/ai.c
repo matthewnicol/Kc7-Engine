@@ -9,66 +9,84 @@ void make_random_move(Board *b, MoveSet *m)
     }
 }
 
-double evaluate(Board *b, MoveSet *m) 
+#define WHITEBLACK_VAL(T, A, B) (T == PLAYER_WHITE ? A : B)
+#define DEFAULT_EVAL(T) WHITEBLACK_VAL(T, -1000.00, 1000.00)
+
+double evaluate(Piece *sq, MoveSet *m, Player p) 
 {
-    if (is_checkmate(b->squares, m)) {
-        return b->turn ? -999.0 : 999.0;
-    } else if (is_stalemate(b->squares, m)) {
-            return 0.0;
+    if (is_checkmate(sq, m)) {
+        return WHITEBLACK_VAL(p, -1000.00, 1000.00);
+    } else if (is_stalemate(sq, m)) {
+        return 0.0;
     }
     int i; 
     float piece_scores = 0;
     int bishops[] = {0, 0};
     // Close game
     for (i = 0; i < 64; i++) {
-        piece_scores += PIECE_VALUE_MAP[b->squares[i]];
-        if (is_bishop[b->squares[i]]) bishops[is_black[b->squares[i]]]++;
+        piece_scores += PIECE_VALUE_MAP[sq[i]];
+        if (is_bishop[sq[i]]) bishops[is_black[sq[i]]]++;
     }
     return piece_scores + (bishops[0] == 2 ? .5 : 0.0) + (bishops[1] == 2 ? -.5 : 0.0);
 }
 
-double minmax(Board *b, int depth, Move *outmove)
+#define SEARCHDEPTH 2
+#define BETTER_EVAL(T, A, B) ((T == PLAYER_WHITE && A > B) || (T == PLAYER_BLACK && A < B))
+
+Move minimax_choice(Piece *sq, MoveSet *m, Player p)
 {
-    MoveSet *m = all_legal_moves(b->squares, b->turn);
-    
-    if (depth == 0) {
-        double result = evaluate(b, m);
-        free(m->moves);
-        free(m);
-        return result;
-    } else {
-        double tmp, best;
-        b->turn = !b->turn;
-        apply_move(b->squares, &m->moves[0]);
-        printf("A NEW CONTENDER");
-        printMove(9999, &m->moves[0]);
-        best = minmax(b, depth-1, outmove);
-        (*outmove).from = m->moves[0].from;
-        (*outmove).to = m->moves[0].to;
-        (*outmove).on_from = m->moves[0].on_from;
-        (*outmove).on_to = m->moves[0].on_to;
-        (*outmove).side_effect = m->moves[0].side_effect;
-        reverse_move(b->squares, &m->moves[0]);
-        int i;
-        for (i = 1; i < m->count; i++) {
-            apply_move(b->squares, &m->moves[i]);
-            tmp = minmax(b, depth-1, outmove);
-            if ((b->turn && tmp < best) || (!b->turn && tmp > best)) {
-                best = tmp;
-                printf("A NEW CONTENDER");
-                printMove(9999, &m->moves[i]);
-                (*outmove).from = m->moves[i].from;
-                (*outmove).to = m->moves[i].to;
-                (*outmove).on_from = m->moves[i].on_from;
-                (*outmove).on_to = m->moves[i].on_to;
-                (*outmove).side_effect = m->moves[0].side_effect;
-            }
-            reverse_move(b->squares, &m->moves[i]);
+    Move choice;
+    double 
+        tmp_evaluation,
+        best_evaluation = DEFAULT_EVAL(p);
+                       
+    for (int i = 0; i < m->count; i++) {
+
+        apply_move(sq, (m->moves+i));
+        tmp_evaluation = minimax(sq, SEARCHDEPTH, TOGGLE(p));
+        reverse_move(sq, (m->moves+i));
+        
+        if (BETTER_EVAL(p, tmp_evaluation, best_evaluation)) {
+            best_evaluation = tmp_evaluation;
+            choice.to = (m->moves+i)->to;
+            choice.from = (m->moves+i)->from;
+            choice.on_to = (m->moves+i)->on_to;
+            choice.on_from = (m->moves+i)->on_from;
+            choice.side_effect = (m->moves+i)->side_effect;
         }
-        free(m->moves); 
-        free(m);
-        b->turn = !b->turn;
-        return best;
     }
+    return choice;
+}
+
+double minimax(Piece *sq, int depth, Player p)
+{
+    MoveSet *m = all_legal_moves(sq, p);
+    if (is_checkmate(sq, m)) {
+        free(m);
+        return WHITEBLACK_VAL(p, -1000.00, 1000.00);
+    } else if (is_stalemate(sq, m)) {
+        free(m);
+        return 0.0;
+    }
+
+    double tmp_evaluation,
+           best_evaluation = DEFAULT_EVAL(p);
+
+    if (depth == 0) {
+        best_evaluation = evaluate(sq, m, p);
+    } else {
+        for (int i = 0; i < m->count; i++) {
+            apply_move(sq, m->moves+i);
+            tmp_evaluation = minimax(sq, depth-1, TOGGLE(p));
+            reverse_move(sq, m->moves+i);
+
+            if (WHITEBLACK_VAL(p, (tmp_evaluation > best_evaluation), (tmp_evaluation < best_evaluation))) {
+                best_evaluation = tmp_evaluation;
+            }
+        }
+    }
+    free(m->moves);
+    free(m);
+    return best_evaluation;
 }
 

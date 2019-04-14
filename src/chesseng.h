@@ -24,7 +24,9 @@ int square_is_attacked(Piece *, int);
 // ai.c
 
 void make_random_move(Board*, MoveSet*);
-double evaluate(Board*, MoveSet*);
+double evaluate(Piece*, MoveSet*, Player);
+Move minimax_choice(Piece*, MoveSet*, Player);
+double minimax(Piece*, int, Player);
 
 /* ########################
  *  HELPERS TO BE MOVED
@@ -72,6 +74,13 @@ int algebraic_to_sq(char file, char rank)
 {
     return (int)(file - 'a') + ((int)(rank - '0') * 8);
 }
+
+/* ########################
+ *  HELPER DEFINITIONS
+ * ########################
+ */
+
+#define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
 
 /* ########################
  *  OUR CODE
