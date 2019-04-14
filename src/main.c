@@ -1,4 +1,5 @@
 #include "chesseng.h"
+#include <time.h>
 
 int main ()
 {
@@ -10,10 +11,13 @@ int main ()
 
     standard_position(b);
     FEN(FENS[0], b);
-    
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
     for (i = 0; i < 20; i++) {
         printBoard(b->squares);
         MoveSet *m = all_legal_moves(b->squares, b->turn);
+//        printAllMoves(m);
         if (is_checkmate(b->squares, m)) {
             printf("Checkmate!\n");
             break;
@@ -28,6 +32,9 @@ int main ()
         free(m);
         b->turn = !b->turn;
     }
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Time taken to solve: %f\n", cpu_time_used);
 
     free(b->squares);
     free(b->moves);
