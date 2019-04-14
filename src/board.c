@@ -54,6 +54,7 @@ int is_stalemate(Piece *sq, MoveSet *m)
    return m->count == 0 && !square_is_attacked(sq, m->king_pos);
 }
 
+
 void FEN(char *fen, Board *b) 
 {
     int i, sq = 0;
@@ -77,18 +78,22 @@ void FEN(char *fen, Board *b)
     // Kingside and Queenside castling rights
     for (i+=2; fen[i] != ' '; i++) {
         if (fen[i] == 'q') {
+            assert(EITHER(b->squares[4], BLACK_KING, BLACK_CASTLING_KING));
             b->squares[4] = BLACK_CASTLING_KING;
             b->squares[7] = BLACK_CASTLING_ROOK;
         }
         if (fen[i] == 'k') {
+            assert(EITHER(b->squares[4], BLACK_KING, BLACK_CASTLING_KING));
             b->squares[4] = BLACK_CASTLING_KING;
             b->squares[0] = BLACK_CASTLING_ROOK;
         }
         if (fen[i] == 'K') {
+            assert(EITHER(b->squares[60], WHITE_KING, WHITE_CASTLING_KING));
             b->squares[60] = WHITE_CASTLING_KING;
             b->squares[63] = WHITE_CASTLING_ROOK;
         }
         if (fen[i] == 'Q') {
+            assert(EITHER(b->squares[60], WHITE_KING, WHITE_CASTLING_KING));
             b->squares[60] = WHITE_CASTLING_KING;
             b->squares[56] = WHITE_CASTLING_ROOK;
         }
