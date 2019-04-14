@@ -2,7 +2,7 @@
 #define VALID(A)    (A >= 0 && A < 64)
 #define COLOURCOND(C, T, W, B) (T? C == B : C == W)
 #define OPPONENTS(S, A, B) ((is_white[S[A]] && is_black[S[B]]) || (is_black[S[A]] && is_white[S[B]]))
-
+#define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
 
 
 static int pawn_advances(Piece*, int, Turn, Move*);
@@ -41,7 +41,7 @@ void printAllMoves(MoveSet *m) {
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
     int i;
-    MoveSet *m = make_moveset(60);
+    MoveSet *m = make_moveset(100);
     assert(m != NULL);
 
     for (i = 0; i < 64; i++) {
@@ -59,10 +59,6 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
     }
 
     remove_moves_leading_to_illegal_positions(sq, m);
-    
-    for (i = 0; i < m->count; i++) {
-    //    printMove(i, m->moves+i);
-    }
     return m;
 }
 
@@ -87,7 +83,7 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
 int square_is_attacked(Piece *sq, int square)
 {
     int i, j, k, attacker = !is_black[sq[square]];
-    Move *m = malloc(sizeof(Move)*30);
+    Move *m = malloc(sizeof(Move)*50);
     for (i = 0; i < 64; i++) {
         if (i == square) continue;
         k = moves_for_square(sq, i, attacker, m);
