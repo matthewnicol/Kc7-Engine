@@ -1,5 +1,3 @@
-#define MAX(A, B) (A > B ? A : B)
-#define MIN(A, B) (A < B ? A : B)
 void make_random_move(Board *b, MoveSet *m)
 {
     time_t t;
@@ -11,8 +9,6 @@ void make_random_move(Board *b, MoveSet *m)
     }
 }
 
-#define WHITEBLACK_VAL(T, A, B) (T == PLAYER_WHITE ? A : B)
-#define DEFAULT_EVAL(T) WHITEBLACK_VAL(T, -1000.00, 1000.00)
 
 int square_value[] = {
     0,   0,   0,   0,   0,   0,   0,   0,
@@ -104,7 +100,7 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
 
         apply_move(sq, (m->moves+i));
         MoveSet *inner_m = all_legal_moves(sq, TOGGLE(p));
-        if (is_checkmate(sq, m)) {
+        if (is_checkmate(sq, inner_m)) {
             free(inner_m->moves);
             free(inner_m);
             return *(m->moves+i);
@@ -148,6 +144,11 @@ double minimax(Piece *sq, MoveSet *m, int depth, Player p, double alpha, double 
             }
             apply_move(sq, m->moves+i);
             MoveSet *inner_m =  all_legal_moves(sq, TOGGLE(p));
+            if ((m->moves+i)->is_checking_move && is_checkmate(sq, inner_m)) {
+                free(inner_m->moves);
+                free(inner_m);
+                return (WHITEBLACK_VAL(p, 1000.0, -1000.0));
+            }
             tmp_evaluation = minimax(sq, inner_m, depth-1, TOGGLE(p), alpha, beta);
             free(inner_m->moves);
             free(inner_m);

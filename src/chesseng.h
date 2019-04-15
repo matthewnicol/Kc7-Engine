@@ -86,6 +86,10 @@ int algebraic_to_sq(char file, char rank)
 #define COLOURCOND(C, T, W, B) (T? C == B : C == W)
 #define OPPONENTS(S, A, B) ((is_white[S[A]] && is_black[S[B]]) || (is_black[S[A]] && is_white[S[B]]))
 #define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
+#define MAX(A, B) (A > B ? A : B)
+#define MIN(A, B) (A < B ? A : B)
+#define WHITEBLACK_VAL(T, A, B) (T == PLAYER_WHITE ? A : B)
+#define DEFAULT_EVAL(T) WHITEBLACK_VAL(T, -1000.00, 1000.00)
 
 /* ########################
  *  OUR CODE
