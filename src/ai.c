@@ -149,22 +149,22 @@ double minimax(Piece *sq, MoveSet *m, int depth, Player p, double alpha, double 
                 free(inner_m);
                 return (WHITEBLACK_VAL(p, 1000.0, -1000.0));
             }
-            tmp_evaluation = minimax(sq, inner_m, depth-1, TOGGLE(p), alpha, beta);
+            tmp_evaluation = minimax(
+                    sq, 
+                    inner_m, 
+                    depth-1, 
+                    TOGGLE(p), 
+                    WHITEBLACK_VAL(p, MAX(alpha, best_evaluation), beta), 
+                    WHITEBLACK_VAL(p, alpha, MIN(beta, best_evaluation)) 
+            );
             free(inner_m->moves);
             free(inner_m);
             if (WHITEBLACK_VAL(p, (tmp_evaluation > best_evaluation), (tmp_evaluation < best_evaluation))) {
                 best_evaluation = tmp_evaluation;
             }
-            if (p == PLAYER_WHITE) {
-                if (tmp_evaluation > beta) {
-                    reverse_move(sq, m->moves+i);
-                    break;
-                }
-            } else if (p == PLAYER_BLACK) {
-                if (tmp_evaluation < beta) {
-                    reverse_move(sq, m->moves+i);
-                    break;
-                }
+            if ((p == PLAYER_WHITE && tmp_evaluation > beta) || (p == PLAYER_BLACK && tmp_evaluation < alpha)) {
+                reverse_move(sq, m->moves+i);
+                break;
             }
             reverse_move(sq, m->moves+i);
         }
