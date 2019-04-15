@@ -92,12 +92,15 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
 
     if (m->count == 1) { return *m->moves; }
                        
-    for (int j = 0; j < 2; j++) {
+    for (int j = 0; j < 3; j++) {
     for (int i = 0; i < m->count; i++) {
-        // Handle captures
-        if (j == 0 && sq[(m->moves+i)->to] == NO_PIECE) continue;
-        // Handle regular moves
-        if (j == 1 && sq[(m->moves+i)->to] != NO_PIECE) continue;
+        if (j == 0 && !(m->moves+i)->is_checking_move) continue;
+        else {
+            // Handle captures
+            if (j == 1 && sq[(m->moves+i)->to] == NO_PIECE) continue;
+            // Handle regular moves
+            if (j == 2 && sq[(m->moves+i)->to] != NO_PIECE) continue;
+        }
 
         apply_move(sq, (m->moves+i));
         MoveSet *inner_m = all_legal_moves(sq, TOGGLE(p));
@@ -133,12 +136,16 @@ double minimax(Piece *sq, MoveSet *m, int depth, Player p, double alpha, double 
     if (is_stalemate(sq, m)) return 0.0;  
     if (depth == 0) return evaluate(sq, m, p);  
     
-    for (int j = 0; j < 2; j++) {
+    for (int j = 0; j < 3; j++) {
         for (int i = 0; i < m->count; i++) {
-            // Handle captures
-            if (j == 0 && sq[(m->moves+i)->to] == NO_PIECE) continue;
-            // Handle regular moves
-            if (j == 1 && sq[(m->moves+i)->to] != NO_PIECE) continue;
+            // Handle checks
+            if (j == 0 && !(m->moves+i)->is_checking_move) continue;
+            else {
+                // Handle captures
+                if (j == 1 && sq[(m->moves+i)->to] == NO_PIECE) continue;
+                // Handle regular moves
+                if (j == 2 && sq[(m->moves+i)->to] != NO_PIECE) continue;
+            }
             apply_move(sq, m->moves+i);
             MoveSet *inner_m =  all_legal_moves(sq, TOGGLE(p));
             tmp_evaluation = minimax(sq, inner_m, depth-1, TOGGLE(p), alpha, beta);
