@@ -315,12 +315,12 @@ static MoveSet *make_moveset(int size)
 
     Move *m = mset->moves;
     for (i = 0; i < size; i++) { 
-
         m[i].from = -1;
         m[i].to = -1;
         m[i].on_from = NO_PIECE;
         m[i].on_to = NO_PIECE;
         m[i].side_effect = NO_S_EFFECT;
+        m[i].is_checking_move = 0;
     }
 
     return mset;
@@ -336,6 +336,7 @@ static void basic_move(Move *m, int from, int to, Piece on_from, Piece on_to)
     m->to = to;
     m->on_from = on_from;
     m->on_to = on_to;
+    if (is_king[on_to]) m->is_checking_move = 1; 
 }
 
 static void move_with_side_effect(Move *m, int from, int to, Piece on_from, Piece on_to, MoveSideEffect mse)
