@@ -1,20 +1,3 @@
-
-
-static int pawn_advances(Piece*, int, Turn, Move*);
-static int pawn_captures(Piece*, int, Turn, Move*);
-static int pawn_ep_captures(Piece*, int, Turn, Move*);
-static int pawn_promotions(Piece*, int, Turn, Move*);
-static int knight_moves(Piece*, int, Move*);
-static int king_moves(Piece*, int, Move*);
-static int king_castles(Piece*, int, Move*);
-static int linewise_piece_moves(Piece*, int, int, int, Move*);
-/*@null@*/ static MoveSet* make_moveset(int);
-static void basic_move(Move*, int, int, Piece, Piece);
-static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
-static int moves_for_square(Piece*, int, Turn, Move*);
-static void remove_moves_leading_to_illegal_positions(Piece*, /*@dependent@*/ MoveSet*);
-MoveSet *all_legal_moves(Piece *sq, Turn t);
-
 void printMove(int movenum, Move *m) {
     printf(
         "Mv%2i: SQ %i (piece %i) to SQ %i (piece %i) %s\n", 
@@ -36,8 +19,7 @@ void printAllMoves(MoveSet *m) {
 MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
     int i;
-    MoveSet *m = make_moveset(100);
-    assert(m != NULL);
+    MoveSet *m = make_moveset(60);
 
     for (i = 0; i < 64; i++) {
         // Add to list of moves we can perform in this position
@@ -46,26 +28,19 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
         if (m->king_pos == -1 && EITHER(sq[i], MYPIECE(t, CASTLING_KING), MYPIECE(t, KING))) m->king_pos = i;
     }
 
-    // Something is wrong with the board if we don't have a valid king position
-    if (m->king_pos == -1) {
-        free(m->moves);
-        free(m);
-        exit(EXIT_FAILURE);
-    }
-
-    remove_moves_leading_to_illegal_positions(sq, m);
+    remove_illegal_moves(sq, m);
     return m;
 }
 
-static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
+static void remove_illegal_moves(Piece *sq, MoveSet *m)
 {
-    int i, k=0;
-    assert(sq != NULL);
-    for (i = 0; i < m->count; i++) {
+    int k=0;
+    for (int i = 0; i < m->count; i++) {
         apply_move(sq, m->moves+i);
-        if (!square_is_attacked(sq, 
-                    // Possibly moved king
-                    is_king[sq[m->moves[i].to]] ? m->moves[i].to : m->king_pos)) {
+        int updated_king_pos = is_king[sq[m->moves[i].to]] ? m->moves[i].to : m->king_pos;
+
+        // Keep legal moves - which don't leave our king in check
+        if (!square_is_attacked(sq, updated_king_pos)) {
             m->moves[k++] = m->moves[i];
         }
         reverse_move(sq, m->moves+i);
@@ -75,12 +50,13 @@ static void remove_moves_leading_to_illegal_positions(Piece *sq, MoveSet *m)
 
 int square_is_attacked(Piece *sq, int square)
 {
-    int i, j, k, attacker = !is_black[sq[square]];
-    Move *m = malloc(sizeof(Move)*50);
-    for (i = 0; i < 64; i++) {
+    int j, k, attacker = is_black[sq[square]] ? PLAYER_WHITE : PLAYER_BLACK;
+    if (square == -1) return 0;
+    Move *m = malloc(sizeof(Move)*100);
+    for (int i = 0; i < 64; i++) {
         if (i == square) continue;
         k = moves_for_square(sq, i, attacker, m);
-        for (j = 0; j < k && m+j != NULL && m[j].to != square; j++); 
+        for (j = 0; j < k &&  m+j != NULL && m[j].to != square; j++); 
         if (j < k) break;
     }
     free(m);
@@ -114,197 +90,12 @@ static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
     return 0;
 }
 
-static int pawn_advances(Piece *sq, int square, Turn t, Move *m)
-{
-    int i = 0;
-    int direction = t == PLAYER_BLACK? 1 : -1;
-    int on_home_rank = COLOURCOND(RANK_MAP[square], t, 2, 7);
-
-    int dst[] = {square+(8*direction), square+(16*direction)};
-    for (int k = 0; k < 2; k++) {
-        if (!VALID(dst[k]) || sq[dst[k]] || (k == 1 && !on_home_rank)) { return i; }
-        basic_move((m+i++), square, dst[k], sq[square], sq[dst[k]]);
-    }
-    return i;
-}
-
-static int pawn_captures(Piece *sq, int square, Turn t, Move *m)
-{
-    int i = 0;
-    int direction = t == PLAYER_WHITE ? -1 : 1;
-    int differentials[] = {7, 9};
-    for (int k = 0; k < 2; k++) {
-        int dst = square+(differentials[k]*direction);
-        if (VALID(dst) && OPPONENTS(sq, square, dst)) {
-            if (EITHER(FILE_MAP[square], 'a', 'h') && EITHER(FILE_MAP[dst], 'a', 'h')) continue;
-            basic_move((m + i++), square, dst, sq[square], sq[dst]);
-        }
-    }
-    return i;
-}
-
-static int pawn_ep_captures(Piece *sq, int square, Turn t, Move *m)
-{
-    int i = 0, direction = t? 1 : -1;
-    int differentials[] = {square+direction*7, square+direction*9};
-    int epsq[] = {square-1*direction, square+1*direction};
-    for (int k = 0; k < 2; k++) { 
-        if (EITHER(FILE_MAP[square], 'a', 'h') && EITHER(FILE_MAP[epsq[k]], 'a', 'h')) continue;
-        if (VALID(differentials[k]) && is_black[sq[square]] ? sq[epsq[k]] == WHITE_EP_PAWN : sq[epsq[k]] == BLACK_EP_PAWN) {
-            move_with_side_effect((m + i++), square, differentials[k], sq[square], sq[differentials[k]], EP_CAPTURE); 
-        }
-    }
-    return i;
-}
-
-static int pawn_promotions(Piece *sq, int square, Turn t, Move *m)
-{
-
-    static Piece promotions[][4] = {
-        {BLACK_QUEEN, BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP},
-        {WHITE_QUEEN, WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP},
-    };
-
-
-    int i = 0, j, direction = t? 1 : -1;
-    int on_promote_rank = (RANK_MAP[sq[square]] == 7 && t) || (RANK_MAP[sq[square]] == 2 && !t);
-    if (on_promote_rank && !sq[square+(8*direction)])
-    {
-        for (j = 0; j < 4; j++) {
-            move_with_side_effect(
-                (m + i++), 
-                square, 
-                square + (8*direction), 
-                sq[square], 
-                promotions[t][j],
-                PROMOTION);
-        }
-    }
-    return i;
-
-}
-
-static int knight_moves(Piece *sq, int square, Move *m)
-{
-    static int knight_diffs[][2] = {
-        {-1, 2}, {1, 2}, {-1, -2}, {1, -2}, {2, -1}, {2, 1}, {-2, -1}, {-2, 1},
-    };
-
-    static char bad_knight_jumps [][2] = {
-        {'a', 'h'}, {'a', 'g'}, {'b', 'h'}, {'h', 'a'}, {'g', 'a'}, {'h', 'b'}
-    };
-
-    int i = 0, j;
-
-    for (j = 0; j < 8; j++) {
-        int sqto = square + (knight_diffs[j][0]*8) + (knight_diffs[j][1]);
-        if (!VALID(sqto)) continue;
-        if (!sq[sqto] || different_team(sq, square, sqto)) {
-            int k, clipping = 0;
-            for (k = 0; k < 6; k++) {
-                if (FILE_MAP[sqto] == bad_knight_jumps[k][0] && FILE_MAP[square] == bad_knight_jumps[k][1]) {
-                    clipping = 1;
-                    break;
-                }
-            }
-            if (!clipping) basic_move((m+i++), square, sqto, sq[square], sq[sqto]); 
-        }
-    } 
-    return i;
-}
-
-static int king_moves(Piece *sq, int square, Move *m)
-{
-    static int king_diffs[][2] = {
-        {0, 1}, {0, -1}, {1, 1}, {1, -1}, {1, 0}, {-1, 1}, {-1, -1}, {-1, 0}
-    };
-
-    int i = 0, j;
-
-    for (j = 0; j < 8; j++) {
-        int sqto = square + king_diffs[j][0]*8 + king_diffs[j][1];
-        if (VALID(sqto) && (!sq[sqto] || different_team(sq, square, sqto))) {
-            basic_move((m+i++), square, sqto, sq[square], sq[sqto]);
-        }
-    }
-    return i;
-}
-
-static int linewise_piece_moves(Piece *sq, int square, int diagonal, int upanddown, Move *m)
-{
-    int i = 0, j, k;
-    int blockaded[] = {0, 0, 0, 0, 0, 0, 0, 0};
-    char onfile[] = {
-        FILE_MAP[square], FILE_MAP[square], FILE_MAP[square], FILE_MAP[square], 
-        FILE_MAP[square], FILE_MAP[square], FILE_MAP[square], FILE_MAP[square]
-    };
-    for (k = 1; k < 8; k++) {
-        int directions[8] = {
-            square + k,
-            square - k,
-            square - (k * 8),
-            square + (k * 8),
-            square + (k * 8) + k,
-            square - (k * 8) - k,
-            square - (k * 8) + k,
-            square + (k * 8) - k,
-        };
-        for (j = 0; j < 8; j++) {
-            if (!VALID(directions[j])) continue;
-            if (!diagonal && j > 3) continue;
-            if (!upanddown && j < 4) continue;
-            if (blockaded[j]) continue;
-
-            if (onfile[j] == 'a' && FILE_MAP[directions[j]] == 'h') {
-                blockaded[j] = 1;
-                continue;
-            }
-            if (onfile[j] == 'h' && FILE_MAP[directions[j]] == 'a') {
-                blockaded[j] = 1;
-                continue;
-            }
-
-            onfile[j] = FILE_MAP[directions[j]];
-
-            blockaded[j] = sq[directions[j]] > 0;
-            if ((blockaded[j] && different_team(sq, square, directions[j])) || !blockaded[j]) {
-                basic_move((m+i++), square, directions[j], sq[square], sq[directions[j]]);
-            }
-        }
-    }
-    return i;
-}
-
-
-static int king_castles(Piece *sq, int square, Move *m)
-{
-    static Piece castling_king[] = {BLACK_CASTLING_KING, WHITE_CASTLING_KING};
-    static Piece castling_rook[] = {BLACK_CASTLING_ROOK, WHITE_CASTLING_ROOK};
-    static Piece moved_king[] = {BLACK_KING, WHITE_KING};
-    int piece_index = is_white[sq[square]];
-    int i = 0;
-    int ks = is_black[sq[square]] ? 4 : 60;
-
-    if (!(square == ks && sq[square] != castling_king[piece_index]))
-        return 0;
-
-    if (sq[square+3] == castling_rook[piece_index] && !sq[square+1] && !sq[square+2]) {
-        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, KS_CASTLE);
-    }
-    if (sq[square-4] == castling_rook[piece_index] && !sq[square-1] && !sq[square-2] && !sq[square-3]) {
-        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, QS_CASTLE);
-    }
-
-    return i;
-}
-
 static MoveSet *make_moveset(int size)
 {
-    int i;
-
     MoveSet *mset = malloc(sizeof (MoveSet));
     if (mset == NULL) return NULL;
     mset->king_pos = -1;
+    mset->king_pos_opp = -1;
     mset->count = 0;
     mset->moves = malloc (sizeof(Move) * size);
 
@@ -313,29 +104,18 @@ static MoveSet *make_moveset(int size)
         return NULL;
     }
 
-    Move *m = mset->moves;
-    for (i = 0; i < size; i++) { 
-        m[i].from = -1;
-        m[i].to = -1;
-        m[i].on_from = NO_PIECE;
-        m[i].on_to = NO_PIECE;
-        m[i].side_effect = NO_S_EFFECT;
-        m[i].is_checking_move = 0;
-    }
-
     return mset;
 }
 
 static void basic_move(Move *m, int from, int to, Piece on_from, Piece on_to)
 {
-    assert(from >= 0 && from < 64);
-    assert(to >= 0 && to < 64);
-    assert((int)on_from >= 0 && on_from < 22);
-    assert((int)on_to >= 0 && on_to < 22);
+    assert(m != NULL);
     m->from = from;
     m->to = to;
     m->on_from = on_from;
     m->on_to = on_to;
+
+    //NOTE: This does not account for discovered checks or promotion checks
     if (is_king[on_to]) m->is_checking_move = 1; 
 }
 

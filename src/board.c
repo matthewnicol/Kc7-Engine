@@ -4,9 +4,8 @@
 Board *new_board() {
     int i;
     Board *b = malloc(sizeof(Board));
-    if (b == NULL) {
-        return NULL;
-    }
+    if (b == NULL) return NULL;
+
     b->squares = malloc(sizeof(Piece)*64);
     if (b->squares == NULL) {
         free(b);
@@ -176,9 +175,9 @@ void printBoard(Piece p[])
         }
         printf("\n");
     }
-        printf("\t|");
-        for (j = 0; j < 8; j++) {
-            printf("%s-----|%s", sqnum, reset);
-        }
-        printf("\n");
+    printf("\t|");
+    for (j = 0; j < 8; j++) {
+        printf("%s-----|%s", sqnum, reset);
+    }
+    printf("\n");
 }

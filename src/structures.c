@@ -27,14 +27,25 @@ typedef struct {
 
 typedef struct {
     double evaluation;
-    Move *move;
-} EvaluatedMove;
+    int depth;
+    Piece *squares;
+    Player turn;
+} Transposition;
+
+typedef struct {
+    Transposition *transposition;
+    int transpositions_counted;
+    int max_transpositions;
+} TranspositionTable;
+
+#define LATEST_TRANSP(T) (T->transposition + T->transpositions_counted)
 
 
 // Bundle up count of moves with the actual moves
 typedef struct {
     int count;
     int king_pos;
+    int king_pos_opp;
     Move *moves;
 } MoveSet;
 
@@ -44,9 +55,6 @@ typedef struct {
      Piece *squares; 
     /*@out@*/ Move *moves;
 } Board;
-
-#define MYPIECE(T, P) (T? BLACK_ ## P : WHITE_ ## P)
-
 
 static char FILE_MAP[] = {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',

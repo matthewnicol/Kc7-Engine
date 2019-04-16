@@ -17,9 +17,25 @@
  * ########################
  */
 
+// piece_moves.c
+static int pawn_advances(Piece*, int, Turn, Move*);
+static int pawn_captures(Piece*, int, Turn, Move*);
+static int pawn_ep_captures(Piece*, int, Turn, Move*);
+static int pawn_promotions(Piece*, int, Turn, Move*);
+static int knight_moves(Piece*, int, Move*);
+static int king_moves(Piece*, int, Move*);
+static int king_castles(Piece*, int, Move*);
+static int linewise_piece_moves(Piece*, int, int, int, Move*);
+
 // move.c
 
 int square_is_attacked(Piece *, int);
+/*@null@*/ static MoveSet* make_moveset(int);
+static void basic_move(Move*, int, int, Piece, Piece);
+static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
+static int moves_for_square(Piece*, int, Turn, Move*);
+static void remove_illegal_moves(Piece*, /*@dependent@*/ MoveSet*);
+MoveSet *all_legal_moves(Piece *sq, Turn t);
 
 // ai.c
 
@@ -27,6 +43,8 @@ void make_random_move(Board*, MoveSet*);
 double evaluate(Piece*, MoveSet*, Player);
 Move minimax_choice(Piece*, MoveSet*, Player);
 double minimax(Piece*, MoveSet*, int, Player, double, double);
+void add_transposition(TranspositionTable*, int, Piece*, Turn, double);
+int find_transposition(TranspositionTable*, int, Piece*, Turn, double*);
 
 /* ########################
  *  HELPERS TO BE MOVED
@@ -91,12 +109,16 @@ int algebraic_to_sq(char file, char rank)
 #define WHITEBLACK_VAL(T, A, B) (T == PLAYER_WHITE ? A : B)
 #define DEFAULT_EVAL(T) WHITEBLACK_VAL(T, -1000.00, 1000.00)
 
+#define MYPIECE(T, P) (T? BLACK_ ## P : WHITE_ ## P)
+#define THEIRPIECE(T, P) (T? WHITE_ ## P : BLACK_ ## P)
+
 /* ########################
  *  OUR CODE
  * ########################
  */
 
-#include "fens.c"   /* Define some positions useful for testing */
-#include "board.c"  /* Creating, Destroying & asking q about boards */
-#include "move.c"   /* Generating legal moves */
-#include "ai.c"     /* Making desicions about position quality */
+#include "fens.c"        /* Define some positions useful for testing */
+#include "board.c"       /* Creating, Destroying & asking q about boards */
+#include "move.c"        /* Generating legal moves */
+#include "ai.c"          /* Making desicions about position quality */
+#include "piece_moves.c" /* Generation functions for squares pieces can move w/o validation */
