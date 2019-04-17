@@ -2,7 +2,6 @@
 /*@null@*/ Board *copy_board(Board *);
 
 Board *new_board() {
-    int i;
     Board *b = malloc(sizeof(Board));
     if (b == NULL) return NULL;
 
@@ -19,7 +18,7 @@ Board *new_board() {
     }
     b->turn = PLAYER_WHITE;
     b->count = 0;
-    for (i = 0; i < 64; i++) b->squares[i] = NO_PIECE;
+    for (int i = 0; i < 64; i++) b->squares[i]= NO_PIECE;
     return b;
 }
 
@@ -53,6 +52,17 @@ int is_stalemate(Piece *sq, MoveSet *m)
    return m->count == 0 && !square_is_attacked(sq, m->king_pos);
 }
 
+int is_check(Piece *sq, Player checked)
+{
+    for (int i = 0; i < 64; i++) {
+        if (sq[i] == MYPIECE(checked, KING) || sq[i] == MYPIECE(checked, CASTLING_KING)) {
+            return square_is_attacked(sq, i);
+        }
+    }
+    return -1;
+
+}
+
 
 void FEN(char *fen, Board *b) 
 {
@@ -65,8 +75,10 @@ void FEN(char *fen, Board *b)
             int k = (int)(fen[i] - '0');
             while (k-- > 0) {
                 b->squares[sq++] = NO_PIECE;
+                printf("%i NO_PIECE\n", sq-1);
             }
         } else {
+            printf("%i %c\n", sq, fen[i]);
             b->squares[sq++] = chr_to_piece(fen[i]);
         }
     }

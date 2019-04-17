@@ -108,6 +108,8 @@ static int king_moves(Piece *sq, int square, Move *m)
     for (j = 0; j < 8; j++) {
         int sqto = square + king_diffs[j][0]*8 + king_diffs[j][1];
         if (VALID(sqto) && (!sq[sqto] || different_team(sq, square, sqto))) {
+            if (FILE_MAP[sqto] == 'h' && FILE_MAP[square] == 'a') continue;
+            if (FILE_MAP[sqto] == 'a' && FILE_MAP[square] == 'h') continue;
             basic_move((m+i++), square, sqto, sq[square], sq[sqto]);
         }
     }
@@ -152,7 +154,8 @@ static int linewise_piece_moves(Piece *sq, int square, int diagonal, int upanddo
 
             blockaded[j] = sq[directions[j]] > 0;
             if ((blockaded[j] && different_team(sq, square, directions[j])) || !blockaded[j]) {
-                basic_move((m+i++), square, directions[j], sq[square], sq[directions[j]]);
+                basic_move((m+i), square, directions[j], sq[square], sq[directions[j]]);
+                i++;
             }
         }
     }

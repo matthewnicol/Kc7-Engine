@@ -5,6 +5,6 @@ run:
 lint:
 	splint +boolint ./src/main.c
 valgrind:
-	valgrind -v --leak-check=yes ./bin/chesseng
+	valgrind -v --leak-check=full --show-leak-kinds=all ./bin/chesseng 
 cppcheck:
 	cppcheck src/main.c

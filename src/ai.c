@@ -10,7 +10,7 @@ void make_random_move(Board *b, MoveSet *m)
 }
 
 
-int square_value[] = {
+static int square_value[] = {
     0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,  75,  75,  75,  75,   0,   0,
@@ -74,6 +74,7 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
            best_evaluation = DEFAULT_EVAL(p),
            tmp_evaluation;
 
+
     if (m->count == 1) { 
         printf("Forced move.\n");
         return *m->moves; 
@@ -93,11 +94,11 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
         free(inner_m);
         reverse_move(sq, (m->moves+i));
         
-        if (BETTER_EVAL(p, tmp_evaluation, best_evaluation) || tmp_evaluation == best_evaluation) {
+        if (BETTER_EVAL(p, tmp_evaluation, best_evaluation)) {
             best_evaluation = tmp_evaluation;
             alpha = WHITEBLACK_VAL(p, best_evaluation, alpha);
             beta = WHITEBLACK_VAL(p, beta, best_evaluation);
-            choice = *(m->moves+i);
+            choice = m->moves[i];
         }
     }
     printf("Evaluation of continuation picked: %f\n", best_evaluation);

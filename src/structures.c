@@ -45,7 +45,6 @@ typedef struct {
 typedef struct {
     int count;
     int king_pos;
-    int king_pos_opp;
     Move *moves;
 } MoveSet;
 

@@ -20,6 +20,7 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
     int i;
     MoveSet *m = make_moveset(60);
+    //assert(m != NULL);
 
     for (i = 0; i < 64; i++) {
         // Add to list of moves we can perform in this position
@@ -27,7 +28,6 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
         // Record king position if this is our king
         if (m->king_pos == -1 && EITHER(sq[i], MYPIECE(t, CASTLING_KING), MYPIECE(t, KING))) m->king_pos = i;
     }
-
     remove_illegal_moves(sq, m);
     return m;
 }
@@ -35,6 +35,7 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
 static void remove_illegal_moves(Piece *sq, MoveSet *m)
 {
     int k=0;
+    Piece *sqpos = sq;
     for (int i = 0; i < m->count; i++) {
         apply_move(sq, m->moves+i);
         int updated_king_pos = is_king[sq[m->moves[i].to]] ? m->moves[i].to : m->king_pos;
@@ -45,22 +46,28 @@ static void remove_illegal_moves(Piece *sq, MoveSet *m)
         }
         reverse_move(sq, m->moves+i);
     }
+    Piece *sqpos2 = sq;
+    assert(sqpos == sqpos2);
     m->count = k;
 }
 
 int square_is_attacked(Piece *sq, int square)
 {
-    int j, k, attacker = is_black[sq[square]] ? PLAYER_WHITE : PLAYER_BLACK;
+    int attacker = is_black[sq[square]] ? PLAYER_WHITE : PLAYER_BLACK;
     if (square == -1) return 0;
     Move *m = malloc(sizeof(Move)*100);
+    assert (m != NULL);
     for (int i = 0; i < 64; i++) {
         if (i == square) continue;
-        k = moves_for_square(sq, i, attacker, m);
-        for (j = 0; j < k &&  m+j != NULL && m[j].to != square; j++); 
-        if (j < k) break;
+        for (int j = 0, k = moves_for_square(sq, i, attacker, m); j < k; j++) {
+            if (m[j].to == square) {
+                free(m);
+                return 1;
+            }
+        }
     }
     free(m);
-    return j < k;
+    return 0;
 }
 
 static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
@@ -95,13 +102,26 @@ static MoveSet *make_moveset(int size)
     MoveSet *mset = malloc(sizeof (MoveSet));
     if (mset == NULL) return NULL;
     mset->king_pos = -1;
-    mset->king_pos_opp = -1;
     mset->count = 0;
     mset->moves = malloc (sizeof(Move) * size);
 
     if (mset->moves == NULL) {
         free(mset);
         return NULL;
+    }
+    
+    mset->moves->from = -1;
+    mset->moves->to = -1;
+    mset->moves->on_from = -1;
+    mset->moves->on_to = -1;
+    mset->moves->side_effect = 0;
+    mset->moves->is_checking_move = 0;
+    for (int i = 0; i < mset->count; i++) {
+        assert(mset->moves+i != NULL);
+        mset->moves[i].from = -1;
+        mset->moves[i].to = -1;
+        mset->moves[i].on_from = -1;
+        mset->moves[i].on_to = -1;
     }
 
     return mset;
@@ -110,13 +130,15 @@ static MoveSet *make_moveset(int size)
 static void basic_move(Move *m, int from, int to, Piece on_from, Piece on_to)
 {
     assert(m != NULL);
+    assert(from > -1 && from < 64);
+    assert(to > -1 && to < 64);
+    assert(on_from >=((Piece) 0) && on_from < ((Piece)25));
     m->from = from;
     m->to = to;
     m->on_from = on_from;
     m->on_to = on_to;
-
-    //NOTE: This does not account for discovered checks or promotion checks
-    if (is_king[on_to]) m->is_checking_move = 1; 
+    m->side_effect = 0;
+    m->is_checking_move = 0;
 }
 
 static void move_with_side_effect(Move *m, int from, int to, Piece on_from, Piece on_to, MoveSideEffect mse)
