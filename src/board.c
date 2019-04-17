@@ -75,10 +75,8 @@ void FEN(char *fen, Board *b)
             int k = (int)(fen[i] - '0');
             while (k-- > 0) {
                 b->squares[sq++] = NO_PIECE;
-                printf("%i NO_PIECE\n", sq-1);
             }
         } else {
-            printf("%i %c\n", sq, fen[i]);
             b->squares[sq++] = chr_to_piece(fen[i]);
         }
     }

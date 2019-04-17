@@ -14,7 +14,6 @@ int main ()
     for (i = 0; i < 20; i++) {
         printBoard(b->squares);
         MoveSet *m = all_legal_moves(b->squares, b->turn);
-        printAllMoves(m);
         if (is_checkmate(b->squares, m)) {
             printf("Checkmate!\n");
             free(m->moves);
