@@ -3,14 +3,15 @@
 
 int main ()
 {
-    int i;
     Board *b = new_board();
     assert (b != NULL);
-    FEN(FENS[3], b);
+    standard_position(b);
+//    FEN(FENS[3], b);
     clock_t start, end;
     double cpu_time_used;
     start = clock();
-    for (i = 0; i < 20; i++) {
+    //for (int i = 0; i < 20; i++) {
+    while(1) {
         printBoard(b->squares);
         MoveSet *m = all_legal_moves(b->squares, b->turn);
         if (is_checkmate(b->squares, m)) {
