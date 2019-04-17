@@ -42,7 +42,7 @@ MoveSet *all_legal_moves(Piece *sq, Turn t);
 void make_random_move(Board*, MoveSet*);
 double evaluate(Piece*, MoveSet*, Player);
 Move minimax_choice(Piece*, MoveSet*, Player);
-double minimax(Piece*, MoveSet*, int, Player, double, double);
+double minimax(Piece*, int, Player, double, double);
 void add_transposition(TranspositionTable*, int, Piece*, Turn, double);
 int find_transposition(TranspositionTable*, int, Piece*, Turn, double*);
 

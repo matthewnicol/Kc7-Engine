@@ -10,56 +10,57 @@ void make_random_move(Board *b, MoveSet *m)
 }
 
 
-static int square_value[] = {
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,  75,  75,  75,  75,   0,   0,
-    0,   0,  75, 100, 100,  75,   0,   0,
-    0,   0,  75, 100, 100,  75,   0,   0,
-    0,   0,  75,  75,  75,  75,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0
-};
+//static int square_value[] = {
+//    0,   0,   0,   0,   0,   0,   0,   0,
+//    0,   0,   0,   0,   0,   0,   0,   0,
+//    0,   0,  75,  75,  75,  75,   0,   0,
+//    0,   0,  75, 100, 100,  75,   0,   0,
+//    0,   0,  75, 100, 100,  75,   0,   0,
+//    0,   0,  75,  75,  75,  75,   0,   0,
+//    0,   0,   0,   0,   0,   0,   0,   0,
+//    0,   0,   0,   0,   0,   0,   0,   0
+//};
 
 double evaluate(Piece *sq, MoveSet *m, Player p) 
 {
     if (is_checkmate(sq, m)) return WHITEBLACK_VAL(p, -1000.00, 1000.00);
     if (is_stalemate(sq, m)) return 0.0;
 
-    MoveSet *opp_moves = all_legal_moves(sq, p);
-    int i; 
+//    MoveSet *opp_moves = all_legal_moves(sq, p);
+//    int i; 
     double piece_scores = 0.0;
-    double center_scores = 0.0;
-    double center_scores_opp = 0.0;
-    double choice_scores = (
-            WHITEBLACK_VAL(p, (double)m->count, 0.0-m->count) + 
-            WHITEBLACK_VAL(p, 0.0-opp_moves->count, (double)opp_moves->count)
-    ) / (m->count + opp_moves->count);
-    int bishops[] = {0, 0};
+//    double center_scores = 0.0;
+//    double center_scores_opp = 0.0;
+//    double choice_scores = (
+//            WHITEBLACK_VAL(p, (double)m->count, 0.0-m->count) + 
+//            WHITEBLACK_VAL(p, 0.0-opp_moves->count, (double)opp_moves->count)
+//    ) / (m->count + opp_moves->count);
+//    int bishops[] = {0, 0};
 
     // Material advantage/disadvantage
-    for (i = 0; i < 64; i++) {
+    for (int i = 0; i < 64; i++) {
         piece_scores += PIECE_VALUE_MAP[sq[i]];
-        if (is_bishop[sq[i]]) bishops[is_black[sq[i]]]++;
+ //       if (is_bishop[sq[i]]) bishops[is_black[sq[i]]]++;
     }
-    for (i = 0; i < m->count; i++) {
-        center_scores += (square_value[(m->moves+i)->to] * 0.25 * (WHITEBLACK_VAL(p, 1, -1)));
-    }
-    for (i = 0; i < opp_moves->count; i++) {
-        center_scores_opp += (square_value[(opp_moves->moves+i)->to] * 0.25 * (WHITEBLACK_VAL(TOGGLE(p), 1, -1)));
-    }
-    free(opp_moves->moves);
-    free(opp_moves);
-    double total_eval = piece_scores 
-        + (bishops[0] == 2 ? .5 : 0.0) 
-        + (bishops[1] == 2 ? -.5 : 0.0) 
-        + center_scores
-        + center_scores_opp
-        + choice_scores;
-    return total_eval;
+//    for (i = 0; i < m->count; i++) {
+//        center_scores += (square_value[(m->moves+i)->to] * 0.025 * (WHITEBLACK_VAL(p, 1, -1)));
+//    }
+//    for (i = 0; i < opp_moves->count; i++) {
+//        center_scores_opp += (square_value[(opp_moves->moves+i)->to] * 0.25 * (WHITEBLACK_VAL(TOGGLE(p), 1, -1)));
+//    }
+//    free(opp_moves->moves);
+//    free(opp_moves);
+//    double total_eval = piece_scores 
+//        + (bishops[0] == 2 ? .5 : 0.0) 
+//        + (bishops[1] == 2 ? -.5 : 0.0) 
+//        + center_scores
+//        + center_scores_opp
+//        + choice_scores;
+//    return total_eval;
+    return (double)piece_scores;
 }
 
-#define SEARCHDEPTH 4
+#define SEARCHDEPTH 5
 #define BETTER_EVAL(T, A, B) ((T == PLAYER_WHITE && A > B) || (T == PLAYER_BLACK && A < B))
 
 // Alpha = best already explored option along the path to the root for the maximizer
@@ -69,9 +70,8 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
 {
     Move choice;
 
-    double alpha = -1000.00, 
-           beta = 1000.00,
-           best_evaluation = DEFAULT_EVAL(p),
+    double alpha = -1001.00, 
+           beta = 1001.00,
            tmp_evaluation;
 
 
@@ -82,66 +82,50 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
                        
     for (int i = 0; i < m->count; i++) {
         apply_move(sq, (m->moves+i));
-        MoveSet *inner_m = all_legal_moves(sq, TOGGLE(p));
-        if (is_checkmate(sq, inner_m)) {
-            printf("Found mate-in-one.\n");
-            free(inner_m->moves);
-            free(inner_m);
-            return *(m->moves+i);
+        tmp_evaluation = minimax(sq, SEARCHDEPTH, TOGGLE(p), alpha, beta);
+        reverse_move(sq, m->moves+i);
+        printf("Evaluation available: %f (%i to %i)\n", tmp_evaluation, (m->moves+i)->from, (m->moves+i)->to);
+        if (p == PLAYER_WHITE && tmp_evaluation > alpha) {
+            alpha = tmp_evaluation;
+            choice = m->moves[i];
         }
-        tmp_evaluation = minimax(sq, inner_m, SEARCHDEPTH, TOGGLE(p), alpha, beta);
-        free(inner_m->moves);
-        free(inner_m);
-        reverse_move(sq, (m->moves+i));
-        
-        if (BETTER_EVAL(p, tmp_evaluation, best_evaluation)) {
-            best_evaluation = tmp_evaluation;
-            alpha = WHITEBLACK_VAL(p, best_evaluation, alpha);
-            beta = WHITEBLACK_VAL(p, beta, best_evaluation);
+        if (p == PLAYER_BLACK && tmp_evaluation < beta) {
+            beta = tmp_evaluation;
             choice = m->moves[i];
         }
     }
-    printf("Evaluation of continuation picked: %f\n", best_evaluation);
+    printf("Evaluation of continuation picked: %f\n", p == PLAYER_WHITE ? alpha : beta);
     return choice;
 }
 
-double minimax(Piece *sq, MoveSet *m, int depth, Player p, double alpha, double beta)
+double minimax(Piece *sq, int depth, Player p, double alpha, double beta)
 {
-    
-    double tmp_evaluation,
-           best_evaluation = DEFAULT_EVAL(p);
-
-    // Handle zero move cases
-    if (is_stalemate(sq, m)) return 0.0;  
-    if (depth == 0) return evaluate(sq, m, p);  
+    MoveSet *m = all_legal_moves(sq, p);
+    if (depth == 0 || m->count == 0) {
+        double eval =evaluate(sq, m, p);  
+        free(m->moves);
+        free(m);
+        return eval;
+    }
     
     for (int i = 0; i < m->count; i++) {
         apply_move(sq, m->moves+i);
-        MoveSet *inner_m =  all_legal_moves(sq, TOGGLE(p));
-        if ((m->moves+i)->is_checking_move && is_checkmate(sq, inner_m)) {
-            free(inner_m->moves);
-            free(inner_m);
-            return (WHITEBLACK_VAL(p, 1000.0, -1000.0));
+        double tmp_evaluation = minimax(sq, depth-1, TOGGLE(p), alpha, beta);
+
+        if (p == PLAYER_WHITE && tmp_evaluation > alpha) {
+            alpha = tmp_evaluation;
         }
-        tmp_evaluation = minimax(
-                sq, 
-                inner_m, 
-                depth-1, 
-                TOGGLE(p), 
-                WHITEBLACK_VAL(p, MAX(alpha, best_evaluation), beta), 
-                WHITEBLACK_VAL(p, alpha, MIN(beta, best_evaluation))
-        );
-        free(inner_m->moves);
-        free(inner_m);
-        if (WHITEBLACK_VAL(p, (tmp_evaluation > best_evaluation), (tmp_evaluation < best_evaluation))) {
-            best_evaluation = tmp_evaluation;
+        if (p == PLAYER_BLACK && tmp_evaluation < beta) {
+            beta = tmp_evaluation;
         }
-        if ((p == PLAYER_WHITE && tmp_evaluation > beta) || (p == PLAYER_BLACK && tmp_evaluation < alpha)) {
-            reverse_move(sq, m->moves+i);
+
+        reverse_move(sq, m->moves+i);
+        if (beta >= alpha) {
             break;
         }
-        reverse_move(sq, m->moves+i);
-    }
-    return best_evaluation;
+    } 
+    free(m->moves);
+    free(m);
+    return p == PLAYER_WHITE ? alpha : beta;
 }
 

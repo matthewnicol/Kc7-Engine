@@ -6,7 +6,6 @@ int main ()
     int i;
     Board *b = new_board();
     assert (b != NULL);
-    standard_position(b);
     FEN(FENS[3], b);
     clock_t start, end;
     double cpu_time_used;
