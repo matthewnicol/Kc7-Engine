@@ -3,6 +3,7 @@
 
 int main ()
 {
+#if 0
     Board *b = new_board();
     assert (b != NULL);
     standard_position(b);
@@ -40,6 +41,29 @@ int main ()
     free(b->squares);
     free(b->moves);
     free(b);
+#endif
+    struct dirent **dirp;
+    FILE *fp;
+//    char *buffer = malloc(sizeof(char)*150);
+    char *pgnpath = malloc(sizeof(char)*150);
+    char *filepath = malloc(sizeof(char)*150);
+//    readlink("/proc/self/exe", buffer, BUFSIZ);
+    sprintf(pgnpath, "%s", "/home/nicol/dev/chesseng/pgn/");
+
+    int pgn_count = scandir(pgnpath, &dirp, NULL, alphasort);
+    while (--pgn_count > 0) {
+        sprintf(filepath, "%s%s", pgnpath, dirp[pgn_count]->d_name); 
+        printf("%s\n", filepath);
+        fp = fopen(filepath, "r");
+        load_pgn(fp);
+        fclose(fp);
+        exit(0);
+    }
+
+//    free(buffer);
+    free(pgnpath);
+    free(filepath);
+    free(dirp);
     exit(0);
 }
 

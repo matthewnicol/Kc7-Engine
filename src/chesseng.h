@@ -1,10 +1,13 @@
+#include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <dirent.h>
 #include <assert.h>
 
+//ssize_t readlink(const char *pathname, char *buf, size_t bufsiz);
 /* ########################
  *  DATA STRUCTURES
  * ########################
@@ -122,3 +125,4 @@ int algebraic_to_sq(char file, char rank)
 #include "move.c"        /* Generating legal moves */
 #include "ai.c"          /* Making desicions about position quality */
 #include "piece_moves.c" /* Generation functions for squares pieces can move w/o validation */
+#include "pgn.c"
