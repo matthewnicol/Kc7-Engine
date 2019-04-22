@@ -1,12 +1,11 @@
 void printMove(int movenum, Move *m) {
     printf(
-        "Mv%2i: SQ %i (piece %i) to SQ %i (piece %i) %s\n", 
+        "Mv%2i: SQ %2i (piece %c) to SQ %2i (piece %1c)\n", 
         movenum,
-        (int)((m)->from),
-        (int)((m)->on_from),
-        (int)((m)->to),
-        (int)((m)->on_to),
-        (m)->on_to ? "(CAPTURE)" : ""
+        m->from,
+        m->on_from,
+        m->to,
+        m->on_to
     );
 }
 
@@ -20,7 +19,6 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
 {
     int i;
     MoveSet *m = make_moveset(60);
-    //assert(m != NULL);
 
     for (i = 0; i < 64; i++) {
         // Add to list of moves we can perform in this position
@@ -38,7 +36,7 @@ static void remove_illegal_moves(Piece *sq, MoveSet *m)
     Piece *sqpos = sq;
     for (int i = 0; i < m->count; i++) {
         apply_move(sq, m->moves+i);
-        int updated_king_pos = is_king[sq[m->moves[i].to]] ? m->moves[i].to : m->king_pos;
+        int updated_king_pos = ISKING(sq[m->moves[i].to]) ? m->moves[i].to : m->king_pos;
 
         // Keep legal moves - which don't leave our king in check
         if (!square_is_attacked(sq, updated_king_pos)) {
@@ -53,7 +51,7 @@ static void remove_illegal_moves(Piece *sq, MoveSet *m)
 
 int square_is_attacked(Piece *sq, int square)
 {
-    int attacker = is_black[sq[square]] ? PLAYER_WHITE : PLAYER_BLACK;
+    int attacker = ISBLACK(sq[square]) ? PLAYER_WHITE : PLAYER_BLACK;
     if (square == -1) return 0;
     Move *m = malloc(sizeof(Move)*100);
     assert (m != NULL);
@@ -72,26 +70,26 @@ int square_is_attacked(Piece *sq, int square)
 
 static int moves_for_square(Piece *sq, int square, Turn t, Move *m)
 {
-    if ((t && is_white[sq[square]]) || (!t && is_black[sq[square]])) return 0;
-    if (is_pawn[sq[square]]) {
+    if (!TURNPIECE(t, sq[square])) return 0;
+    if (ISPAWN(sq[square])) {
         int movec = 0;
         movec += pawn_advances(sq, square, t, m+movec); 
         movec += pawn_captures(sq, square, t, m+movec);
         movec += pawn_ep_captures(sq, square, t, m+movec);
         movec += pawn_promotions(sq, square, t, m+movec);
         return movec;
-    } else if (is_knight[sq[square]]) {
+    } else if (ISKNIGHT(sq[square])) {
         return knight_moves(sq, square, m);
-    } else if (is_king[sq[square]]) {
+    } else if (ISKING(sq[square])) {
         int movec = 0;
         movec += king_moves(sq, square, m);
         movec += king_castles(sq, square, m+movec);
         return movec;
-    } else if (is_bishop[sq[square]]) {
+    } else if (ISBISHOP(sq[square])) {
         return linewise_piece_moves(sq, square, 1, 0, m);
-    } else if (is_rook[sq[square]]) {
+    } else if (ISROOK(sq[square])) {
         return linewise_piece_moves(sq, square, 0, 1, m);
-    } else if (is_queen[sq[square]]) {
+    } else if (ISQUEEN(sq[square])) {
         return linewise_piece_moves(sq, square, 1, 1, m);
     }
     return 0;
@@ -132,7 +130,7 @@ static void basic_move(Move *m, int from, int to, Piece on_from, Piece on_to)
     assert(m != NULL);
     assert(from > -1 && from < 64);
     assert(to > -1 && to < 64);
-    assert(on_from >=((Piece) 0) && on_from < ((Piece)25));
+    assert(ISPIECE(on_from));
     m->from = from;
     m->to = to;
     m->on_from = on_from;

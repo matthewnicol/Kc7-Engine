@@ -77,7 +77,7 @@ void FEN(char *fen, Board *b)
                 b->squares[sq++] = NO_PIECE;
             }
         } else {
-            b->squares[sq++] = chr_to_piece(fen[i]);
+            b->squares[sq++] = fen[i];
         }
     }
     
@@ -131,7 +131,7 @@ void apply_move(Piece *sq, Move *m)
         sq[m->from-2] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
         sq[m->to+4] = NO_PIECE;
     } else if (m->side_effect == EP_CAPTURE) {
-        sq[m->to + (8 * (is_white[sq[m->to]] ? 1 : -1))] = NO_PIECE;
+        sq[m->to + (8 * (ISWHITE(sq[m->to]) ? 1 : -1))] = NO_PIECE;
     } else if (m->side_effect == PROMOTION) {
         // this side effect is needed for reverse_move
     }
@@ -150,13 +150,11 @@ void reverse_move(Piece *sq, Move *m)
         sq[m->from-2] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
         sq[m->to+1] = NO_PIECE;
     } else if (m->side_effect == EP_CAPTURE) {
-        sq[m->to + (8 * (is_white[sq[m->to]] ? 1 : -1))] = sq[m->from] == WHITE_PAWN ? BLACK_EP_PAWN : WHITE_EP_PAWN;
+        sq[m->to + (8 * (ISWHITE(sq[m->to]) ? 1 : -1))] = sq[m->from] == WHITE_PAWN ? BLACK_EP_PAWN : WHITE_EP_PAWN;
     } else if (m->side_effect == PROMOTION) {
         // this side effect is needed for reverse_move
     }
 }
-
-#define RP(X)   (COLOUR_PIECE_MAP[p[X]])
 
 void printBoard(Piece p[])
 {
@@ -175,9 +173,11 @@ void printBoard(Piece p[])
         printf("\n");
         printf("\t%s|%s", sqnum, reset);
         for (j = 0; j < 8; j++) {
+            char pc = p[i*8+j];
             printf("%s%4c%s %s|%s", 
-                is_black[p[i*8+j]]? black : white,
-                p[i*8+j]? RP(i*8+j) : ' ',
+                ISBLACK(p[i*8+j])? black : white,
+                //PIECEREP(p[i*8+j]),
+                ISPIECE(pc) ? pc : ' ',
                 reset,
                 sqnum,
                 reset

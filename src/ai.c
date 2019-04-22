@@ -26,16 +26,9 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
     if (is_checkmate(sq, m)) return WHITEBLACK_VAL(p, -1000.00, 1000.00);
     if (is_stalemate(sq, m)) return 0.0;
 
-//    MoveSet *opp_moves = all_legal_moves(sq, p);
-//    int i; 
     double piece_scores = 0.0;
     double bishop_scores = 0.0;
     double center_scores = 0.0;
-//    double center_scores_opp = 0.0;
-//    double choice_scores = (
-//            WHITEBLACK_VAL(p, (double)m->count, 0.0-m->count) + 
-//            WHITEBLACK_VAL(p, 0.0-opp_moves->count, (double)opp_moves->count)
-//    ) / (m->count + opp_moves->count);
     int bishops[] = {0, 0};
     double attack_equivelant_piece = 0.0;
     double attack_better_piece = 0.0;
@@ -44,13 +37,13 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
     Move *msq = malloc(sizeof(Move)*30);
     for (int i = 0; i < 64; i++) {
         // Material advantage/disadvantage
-        piece_scores += PIECE_VALUE_MAP[sq[i]];
+        piece_scores += VALUEOF(sq[i]) * (ISBLACK(sq[i]) ? -1 : 1);
         // Count up bishops
         if (sq[i] == WHITE_BISHOP) bishops[0]++;
-        if (sq[i] == WHITE_BISHOP) bishops[1]++;
+        if (sq[i] == BLACK_BISHOP) bishops[1]++;
         
         // Moves for each square...
-        if ((p == PLAYER_WHITE && is_white[sq[i]]) || (p == PLAYER_BLACK && is_black[sq[i]])) {
+        if (TURNPIECE(p, sq[i])) {
             int k = moves_for_square(sq, i, p, msq);
             for (int j = 0; j < k; j++) {
                 // Total moves available
@@ -58,7 +51,7 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
                     can_move_to += 1* (p == PLAYER_WHITE ? 1 : -1); 
                 // Attacks on better pieces
                 } else {
-                    if (abs(PIECE_VALUE_MAP[sq[msq[j].to]]) > abs(PIECE_VALUE_MAP[sq[msq[j].from]])) {
+                    if (abs(VALUEOF(sq[msq[j].to])) > abs(VALUEOF(sq[msq[j].from]))) {
                         attack_better_piece += 1* (p == PLAYER_WHITE ? 1 : -1); 
                     } else {
                         attack_equivelant_piece += 1* (p == PLAYER_WHITE ? 1 : -1); 
@@ -82,7 +75,7 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
         + ((double)can_move_to/300);
 }
 
-#define SEARCHDEPTH 6
+#define SEARCHDEPTH 3
 #define BETTER_EVAL(T, A, B) ((T == PLAYER_WHITE && A > B) || (T == PLAYER_BLACK && A < B))
 
 // Alpha = best already explored option along the path to the root for the maximizer
@@ -106,7 +99,6 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
         apply_move(sq, (m->moves+i));
         tmp_evaluation = minimax(sq, SEARCHDEPTH, TOGGLE(p), alpha, beta);
         reverse_move(sq, m->moves+i);
-    //    printf("Evaluation available: %f (%i to %i)\n", tmp_evaluation, (m->moves+i)->from, (m->moves+i)->to);
         if (p == PLAYER_WHITE && tmp_evaluation > alpha) {
             alpha = tmp_evaluation;
             choice = m->moves[i];

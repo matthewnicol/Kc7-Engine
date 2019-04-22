@@ -56,7 +56,7 @@ int same_team(Piece *p, int sq1, int sq2)
 {
     assert(sq1 > -1 && sq1 < 64);
     assert(sq2 > -1 && sq2 < 64);
-    return (is_black[p[sq1]] && is_black[p[sq2]]) || (is_white[p[sq1]] && is_white[p[sq2]]);
+    return (ISBLACK(p[sq1]) && ISBLACK(p[sq2])) || (ISWHITE(p[sq1]) && ISWHITE(p[sq2]));
 }
 
 /* Does a board have opponent pieces in sq1 and sq2? */
@@ -64,7 +64,7 @@ bool different_team(Piece *p, int sq1, int sq2)
 {
     assert(sq1 > -1 && sq1 < 64);
     assert(sq2 > -1 && sq2 < 64);
-    return (is_black[p[sq1]] && is_white[p[sq2]]) || (is_white[p[sq1]] && is_black[p[sq2]]);
+    return (ISBLACK(p[sq1]) && ISWHITE(p[sq2])) || (ISWHITE(p[sq1]) && ISBLACK(p[sq2]));
 }
 
 /* What piece does this char refer to? */
@@ -87,6 +87,15 @@ Piece chr_to_piece(char c)
     }
 }
 
+int makes_matching_pair(char a, char b, char pairs[][2])
+{
+    for (int i = 0; pairs[i][0] != '\0' && pairs[i][1] != '\0'; i++) {
+        if (pairs[i][0] == a && pairs[i][0] == b) return 1;
+    }
+    return 0;
+    return 1;
+}
+
 /* What array index does this algebraic representation of a square point to? */
 int algebraic_to_sq(char file, char rank) 
 {
@@ -102,7 +111,7 @@ int algebraic_to_sq(char file, char rank)
 #define EITHER(A,B,C)    ((A == B || A == C))
 #define VALID(A)    (A >= 0 && A < 64)
 #define COLOURCOND(C, T, W, B) (T? C == B : C == W)
-#define OPPONENTS(S, A, B) ((is_white[S[A]] && is_black[S[B]]) || (is_black[S[A]] && is_white[S[B]]))
+#define OPPONENTS(S, A, B) ((ISWHITE(S[A]) && ISBLACK(S[B])) || (ISBLACK(S[A]) && ISWHITE(S[B])))
 #define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
 #define MAX(A, B) (A > B ? A : B)
 #define MIN(A, B) (A < B ? A : B)
