@@ -124,6 +124,21 @@ void apply_move(Piece *sq, Move *m)
 {
     sq[m->to] = m->on_from;
     sq[m->from] = NO_PIECE;
+
+    // Mark potential EP capture squares
+    if (m->to == m->from + 16 && sq[m->to] == BLACK_PAWN) sq[m->to] = BLACK_EP_PAWN;
+    if (m->to == m->from - 16 && sq[m->to] == WHITE_PAWN) sq[m->to] = WHITE_EP_PAWN;
+
+    // Reset previous potential EP capture squares
+    if (ISWHITE(sq[m->to]))
+        for (int i = 24; i < 32; i++)
+            if (sq[i] == BLACK_EP_PAWN) sq[i] = BLACK_PAWN;
+
+    // Reset previous potential EP capture squares
+    if (ISBLACK(sq[m->to]))
+        for (int i = 32; i < 40; i++)
+            if (sq[i] == WHITE_EP_PAWN) sq[i] = WHITE_PAWN;
+
     if (m->side_effect == KS_CASTLE) {
         sq[m->from+1] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
         sq[m->to+1] = NO_PIECE;
