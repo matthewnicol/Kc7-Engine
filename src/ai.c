@@ -76,7 +76,7 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
         + ((double)can_move_to/300);
 }
 
-#define SEARCHDEPTH 7
+#define SEARCHDEPTH 5
 #define BETTER_EVAL(T, A, B) ((T == PLAYER_WHITE && A > B) || (T == PLAYER_BLACK && A < B))
 
 // Alpha = best already explored option along the path to the root for the maximizer
