@@ -9,10 +9,11 @@ int main ()
     clock_t start, end;
     double cpu_time_used;
     start = clock();
-    //for (int i = 0; i < 20; i++) {
+    //for (int i = 0; i < 4; i++) {
     while(1) {
         printBoard(b->squares);
         MoveSet *m = all_legal_moves(b->squares, b->turn);
+        printAllMoves(m);
         if (is_checkmate(b->squares, m)) {
             printf("Checkmate!\n");
             free(m->moves);

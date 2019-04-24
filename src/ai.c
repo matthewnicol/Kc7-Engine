@@ -66,16 +66,17 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
     // Bishop Pair Bonus
     if (bishops[0] == 2) { bishop_scores += .5; }
     if (bishops[1] == 2) { bishop_scores -= .5; }
+    free(msq);
     return 
         (double)piece_scores 
         + (double)bishop_scores 
-        + (double)center_scores 
+        + ((double)center_scores/200)
         + ((double)attack_equivelant_piece/200) 
         + ((double)attack_better_piece/100)
         + ((double)can_move_to/300);
 }
 
-#define SEARCHDEPTH 3
+#define SEARCHDEPTH 7
 #define BETTER_EVAL(T, A, B) ((T == PLAYER_WHITE && A > B) || (T == PLAYER_BLACK && A < B))
 
 // Alpha = best already explored option along the path to the root for the maximizer
@@ -85,8 +86,8 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
 {
     Move choice;
 
-    double alpha = -1001.00, 
-           beta = 1001.00,
+    double alpha = -1000.00, 
+           beta = 1000.00,
            tmp_evaluation;
 
 
@@ -116,7 +117,7 @@ double minimax(Piece *sq, int depth, Player p, double alpha, double beta)
 {
     MoveSet *m = all_legal_moves(sq, p);
     if (depth == 0 || m->count == 0) {
-        double eval =evaluate(sq, m, p);  
+        double eval = evaluate(sq, m, p);  
         free(m->moves);
         free(m);
         return eval;
