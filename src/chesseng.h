@@ -87,13 +87,12 @@ Piece chr_to_piece(char c)
     }
 }
 
-int makes_matching_pair(char a, char b, char pairs[][2])
+int matches_pair(char a, char b, char pairs[][2])
 {
     for (int i = 0; pairs[i][0] != '\0' && pairs[i][1] != '\0'; i++) {
         if (pairs[i][0] == a && pairs[i][0] == b) return 1;
     }
     return 0;
-    return 1;
 }
 
 /* What array index does this algebraic representation of a square point to? */
@@ -109,9 +108,11 @@ int algebraic_to_sq(char file, char rank)
 
 #define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
 #define EITHER(A,B,C)    ((A == B || A == C))
+#define EITHER3(A,B,C,D)    ((A == B || A == C || A == D))
 #define VALID(A)    (A >= 0 && A < 64)
 #define COLOURCOND(C, T, W, B) (T? C == B : C == W)
-#define OPPONENTS(S, A, B) ((ISWHITE(S[A]) && ISBLACK(S[B])) || (ISBLACK(S[A]) && ISWHITE(S[B])))
+#define FRIENDS(S, A, B) ((ISWHITE(S[A]) && ISWHITE(S[B])) || (ISBLACK(S[A]) && ISBLACK(S[B])))
+#define ENEMIES(S, A, B) ((ISWHITE(S[A]) && ISBLACK(S[B])) || (ISBLACK(S[A]) && ISWHITE(S[B])))
 #define TOGGLE(T) (T == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE)
 #define MAX(A, B) (A > B ? A : B)
 #define MIN(A, B) (A < B ? A : B)
