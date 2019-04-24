@@ -33,7 +33,6 @@ MoveSet *all_legal_moves(Piece *sq, Turn t)
 static void remove_illegal_moves(Piece *sq, MoveSet *m)
 {
     int k=0;
-    Piece *sqpos = sq;
     for (int i = 0; i < m->count; i++) {
         apply_move(sq, m->moves+i);
         int updated_king_pos = ISKING(sq[m->moves[i].to]) ? m->moves[i].to : m->king_pos;
@@ -44,27 +43,44 @@ static void remove_illegal_moves(Piece *sq, MoveSet *m)
         }
         reverse_move(sq, m->moves+i);
     }
-    Piece *sqpos2 = sq;
-    assert(sqpos == sqpos2);
     m->count = k;
 }
 
 int square_is_attacked(Piece *sq, int square)
 {
-    int attacker = ISBLACK(sq[square]) ? PLAYER_WHITE : PLAYER_BLACK;
+    int attacker = ISBLACK(sq[square]) ? WHITE : BLACK;
     if (square == -1) return 0;
     Move *m = malloc(sizeof(Move)*100);
     assert (m != NULL);
-    for (int i = 0; i < 64; i++) {
-        if (i == square) continue;
-        for (int j = 0, k = moves_for_square(sq, i, attacker, m); j < k; j++) {
-            if (m[j].to == square) {
+    for (int i = knight_moves(sq, square, m)-1; i >= 0; i--) {
+        if (sq[(m+i)->to] == MYPIECE(attacker, KNIGHT)) {
+            free(m);
+            return 1;
+        }
+    }
+    for (int i = linewise_piece_moves(sq, square, 1, 1, m)-1; i >= 0; i--) {
+        if (sq[(m+i)->to] == MYPIECE(attacker, QUEEN)) {
+            free(m);
+            return 1;
+        }
+        if (FILE_MAP[(m+i)->to] == FILE_MAP[(m+i)->from] || RANK_MAP[(m+i)->to] == RANK_MAP[(m+i)->from]) {
+            if (sq[(m+i)->to] == MYPIECE(attacker, ROOK) || sq[(m+i)->to] == MYPIECE(attacker, CASTLING_ROOK)) {
+                free(m);
+                return 1;
+            }
+        } else {
+            if (sq[(m+i)->to] == MYPIECE(attacker, BISHOP)) {
                 free(m);
                 return 1;
             }
         }
     }
-    free(m);
+    for (int i = pawn_captures(sq, square, TOGGLE(attacker), m); i >= 0; i--) {
+        if (sq[(m+i)->to] == MYPIECE(attacker, PAWN) || sq[(m+i)->to] == MYPIECE(attacker, EP_PAWN)) {
+            free(m);
+            return 1;
+        }
+    }
     return 0;
 }
 
