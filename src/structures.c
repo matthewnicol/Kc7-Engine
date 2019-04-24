@@ -38,7 +38,7 @@
 
 #define ISBLACK(X) (X >= 'a' && X <= 'z')
 #define ISWHITE(X) (X >= 'A' && X <= 'Z')
-#define ISPIECE(X) (ISBLACK(X) || ISWHITE(X))
+#define ISPIECE(X) (X != NO_PIECE)
 
 #define ISKNIGHT(X) (X == WHITE_KNIGHT || X == BLACK_KNIGHT)
 #define ISBISHOP(X) (X == WHITE_BISHOP || X == BLACK_BISHOP)
