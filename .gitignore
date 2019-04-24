@@ -1,2 +1,5 @@
 .vscode
 *vgcore*
+*callgrind*
+pgn
+pgn/*
