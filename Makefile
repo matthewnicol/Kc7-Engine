@@ -1,5 +1,5 @@
 default: 
-	c99 -o bin/chesseng -g -Wall -Werror -Wextra -pedantic src/main.c
+	c99 -o bin/chesseng -g -pedantic src/main.c
 run:
 	./bin/chesseng
 lint:
@@ -8,3 +8,10 @@ valgrind:
 	valgrind -v --leak-check=full --show-leak-kinds=all ./bin/chesseng 
 cppcheck:
 	cppcheck src/main.c
+profile:
+	rm -rf callgrind*
+	valgrind --tool=callgrind ./bin/chesseng
+	kcachegrind callgrind*
+test:
+	c99 -o bin/tests src/test.c
+	./bin/tests
