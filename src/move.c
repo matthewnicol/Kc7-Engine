@@ -81,6 +81,7 @@ int square_is_attacked(Piece *sq, int square)
             return 1;
         }
     }
+    free(m);
     return 0;
 }
 
