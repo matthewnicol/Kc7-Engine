@@ -61,10 +61,7 @@ typedef enum {
 typedef struct {
     int from;
     int to;
-    Piece on_from;
-    Piece on_to;
     MoveSideEffect side_effect;
-    int is_checking_move; // Store to save on double-handling
 } Move;
 
 typedef struct {

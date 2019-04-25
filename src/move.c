@@ -1,11 +1,9 @@
 void printMove(int movenum, Move *m) {
     printf(
-        "Mv%2i: SQ %2i (piece %c) to SQ %2i (piece %1c)\n", 
+        "Mv%2i: SQ %2i to SQ %2i\n", 
         movenum,
         m->from,
-        m->on_from,
-        m->to,
-        m->on_to
+        m->to
     );
 }
 
@@ -125,39 +123,18 @@ static MoveSet *make_moveset(int size)
         return NULL;
     }
     
-    mset->moves->from = -1;
-    mset->moves->to = -1;
-    mset->moves->on_from = -1;
-    mset->moves->on_to = -1;
-    mset->moves->side_effect = 0;
-    mset->moves->is_checking_move = 0;
-    for (int i = 0; i < mset->count; i++) {
-        assert(mset->moves+i != NULL);
-        mset->moves[i].from = -1;
-        mset->moves[i].to = -1;
-        mset->moves[i].on_from = -1;
-        mset->moves[i].on_to = -1;
-    }
-
     return mset;
 }
 
-static void basic_move(Move *m, int from, int to, Piece on_from, Piece on_to)
+static void basic_move(Move *m, int from, int to)
 {
-    assert(m != NULL);
-    assert(from > -1 && from < 64);
-    assert(to > -1 && to < 64);
-    assert(ISPIECE(on_from));
     m->from = from;
     m->to = to;
-    m->on_from = on_from;
-    m->on_to = on_to;
     m->side_effect = 0;
-    m->is_checking_move = 0;
 }
 
-static void move_with_side_effect(Move *m, int from, int to, Piece on_from, Piece on_to, MoveSideEffect mse)
+static void move_with_side_effect(Move *m, int from, int to, MoveSideEffect mse)
 {
-    basic_move(m, from, to, on_from, on_to);
+    basic_move(m, from, to);
     m->side_effect = mse;
 }

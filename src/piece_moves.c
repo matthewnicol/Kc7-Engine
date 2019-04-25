@@ -9,7 +9,7 @@ static int pawn_advances(Piece *sq, int square, Turn t, Move *m)
     int dst[] = {square+(8*DIRECTION(t)), square+(16*DIRECTION(t))};
     for (int k = 0; k < 2; k++) {
         if (!VALID(dst[k]) || sq[dst[k]] != ' ' || (k == 1 && !on_home_rank)) { return i; }
-        basic_move((m+i++), square, dst[k], sq[square], sq[dst[k]]);
+        basic_move((m+i++), square, dst[k]);
     }
     return i;
 }
@@ -21,7 +21,7 @@ int pawn_captures(Piece *sq, int square, Turn t, Move *m)
     for (int k = 0; k < 2; k++) {
         int dst = square+(differentials[k]*DIRECTION(t));
         if (VALID(dst) && ENEMIES(sq, square, dst) && !WRAPS(square, dst)) {
-            basic_move((m + i++), square, dst, sq[square], sq[dst]);
+            basic_move((m + i++), square, dst);
         }
     }
     return i;
@@ -34,7 +34,7 @@ static int pawn_ep_captures(Piece *sq, int square, Turn t, Move *m)
     int epsq[] = {square-1*direction, square+1*direction};
     for (int k = 0; k < 2; k++) { 
         if (VALID(differentials[k]) && sq[epsq[k]] == THEIRPIECE(t, EP_PAWN) && !WRAPS(square, epsq[k])) {
-            move_with_side_effect((m + i++), square, differentials[k], sq[square], sq[differentials[k]], EP_CAPTURE); 
+            move_with_side_effect((m + i++), square, differentials[k], EP_CAPTURE); 
         }
     }
     return i;
@@ -58,8 +58,6 @@ static int pawn_promotions(Piece *sq, int square, Turn t, Move *m)
                 (m + i++), 
                 square, 
                 square + (DIRECTION(t)*8), 
-                sq[square], 
-                promotions[t][j],
                 PROMOTION);
         }
     }
@@ -83,7 +81,7 @@ int knight_moves(Piece *sq, int square, Move *m)
         int sqto = square + (knight_diffs[j][0]*8) + (knight_diffs[j][1]);
         if (!VALID(sqto) || matches_pair(FILE_MAP[sqto], FILE_MAP[square], bad_knight_jumps)) continue;
         if (sq[sqto] == ' ' || different_team(sq, square, sqto)) {
-            basic_move((m+i++), square, sqto, sq[square], sq[sqto]); 
+            basic_move((m+i++), square, sqto); 
         }
     } 
     return i;
@@ -102,7 +100,7 @@ static int king_moves(Piece *sq, int square, Move *m)
         if (VALID(sqto) && (sq[sqto] == ' ' || different_team(sq, square, sqto))) {
             if (FILE_MAP[sqto] == 'h' && FILE_MAP[square] == 'a') continue;
             if (FILE_MAP[sqto] == 'a' && FILE_MAP[square] == 'h') continue;
-            basic_move((m+i++), square, sqto, sq[square], sq[sqto]);
+            basic_move((m+i++), square, sqto);
         }
     }
     return i;
@@ -134,7 +132,7 @@ int linewise_piece_moves(Piece *sq, int square, int diagonal, int upanddown, Mov
                 continue;
             }
             if (sq[directions[j]] != ' ' && ENEMIES(sq, square, directions[j])) blockaded[j] = 1;
-            basic_move((m+i++), square, directions[j], sq[square], sq[directions[j]]);
+            basic_move((m+i++), square, directions[j]);
         }
     }
     return i;
@@ -154,10 +152,10 @@ static int king_castles(Piece *sq, int square, Move *m)
         return 0;
 
     if (sq[square+3] == castling_rook[piece_index] && !sq[square+1] && !sq[square+2]) {
-        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, KS_CASTLE);
+        move_with_side_effect((m+i++), square, square+2, KS_CASTLE);
     }
     if (sq[square-4] == castling_rook[piece_index] && !sq[square-1] && !sq[square-2] && !sq[square-3]) {
-        move_with_side_effect((m+i++), square, square+2, moved_king[piece_index], NO_PIECE, QS_CASTLE);
+        move_with_side_effect((m+i++), square, square-2, QS_CASTLE);
     }
 
     return i;

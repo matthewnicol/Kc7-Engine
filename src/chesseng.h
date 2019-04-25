@@ -32,8 +32,8 @@ static int linewise_piece_moves(Piece*, int, int, int, Move*);
 
 int square_is_attacked(Board *, int);
 /*@null@*/ static MoveSet* make_moveset(int);
-static void basic_move(Move*, int, int, Piece, Piece);
-static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
+static void basic_move(Move*, int, int);
+static void move_with_side_effect(Move*, int, int, MoveSideEffect);
 static int moves_for_square(Piece*, int, Turn, Move*);
 static void remove_illegal_moves(Board*, /*@dependent@*/ MoveSet*);
 MoveSet *all_legal_moves(Board *, Turn);

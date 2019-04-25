@@ -110,7 +110,7 @@ void apply_move(Board *b, Move *m)
         for (int i = 32; i < 40; i++)
             if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
 
-    b->squares[m->to] = m->on_from;
+    b->squares[m->to] = b->squares[m->from];
     b->squares[m->from] = NO_PIECE;
 
     // Mark potential EP capture squares
@@ -121,8 +121,8 @@ void apply_move(Board *b, Move *m)
         b->squares[m->from+1] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
         b->squares[m->to+1] = NO_PIECE;
     } else if (m->side_effect == QS_CASTLE) {
-        b->squares[m->from-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
-        b->squares[m->to+4] = NO_PIECE;
+        b->squares[(m->from)-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
+        b->squares[(m->to)+4] = NO_PIECE;
     } else if (m->side_effect == EP_CAPTURE) {
         b->squares[m->to + (8 * (ISWHITE(b->squares[m->to]) ? 1 : -1))] = NO_PIECE;
     } else if (m->side_effect == PROMOTION) {
