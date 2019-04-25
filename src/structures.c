@@ -95,6 +95,8 @@ typedef struct {
      int count;
      Piece *squares; 
     /*@out@*/ Move *moves;
+     Piece *captures;
+     int move_number;
 } Board;
 
 static char FILE_MAP[] = {

@@ -16,30 +16,17 @@ Board *new_board() {
         free(b);
         return NULL;
     }
+    b->captures = malloc(sizeof(Piece)*100);
+    if (b->captures == NULL) {
+        free(b->squares);
+        free(b->moves);
+        free(b);
+    }
     b->turn = PLAYER_WHITE;
+    b->move_number = 0;
     b->count = 0;
     for (int i = 0; i < 64; i++) b->squares[i]= NO_PIECE;
     return b;
-}
-
-Board *copy_board(Board *b)
-{
-    int i;
-    Board *bcopy = malloc(sizeof(Board));
-    if (bcopy == NULL) {
-        return NULL;
-    }
-    bcopy->squares = malloc(sizeof(Piece)*64);
-    if (bcopy->squares == NULL) {
-        free(bcopy);
-        return NULL;
-    }
-    for (i = 0; i < 64; i++) {
-        bcopy->squares[i] = b->squares[i];
-    }
-    bcopy->turn = b->turn;
-    bcopy->count = b->count;
-    return bcopy;
 }
 
 int is_checkmate(Board *b, MoveSet *m)
@@ -110,22 +97,25 @@ void standard_position(Board *b)
 
 void apply_move(Board *b, Move *m)
 {
+
+    b->captures[b->move_number++] = b->squares[m->to];
+    
+    // Reset previous potential EP capture squares
+    if (ISWHITE(b->squares[m->from]))
+        for (int i = 24; i < 32; i++)
+            if (b->squares[i] == BLACK_EP_PAWN) b->squares[i] = BLACK_PAWN;
+
+    // Reset previous potential EP capture squares
+    if (ISBLACK(b->squares[m->from]))
+        for (int i = 32; i < 40; i++)
+            if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
+
     b->squares[m->to] = m->on_from;
     b->squares[m->from] = NO_PIECE;
 
     // Mark potential EP capture squares
     if (m->to == m->from + 16 && b->squares[m->to] == BLACK_PAWN) b->squares[m->to] = BLACK_EP_PAWN;
     if (m->to == m->from - 16 && b->squares[m->to] == WHITE_PAWN) b->squares[m->to] = WHITE_EP_PAWN;
-
-    // Reset previous potential EP capture squares
-    if (ISWHITE(b->squares[m->to]))
-        for (int i = 24; i < 32; i++)
-            if (b->squares[i] == BLACK_EP_PAWN) b->squares[i] = BLACK_PAWN;
-
-    // Reset previous potential EP capture squares
-    if (ISBLACK(b->squares[m->to]))
-        for (int i = 32; i < 40; i++)
-            if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
 
     if (m->side_effect == KS_CASTLE) {
         b->squares[m->from+1] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
@@ -142,8 +132,19 @@ void apply_move(Board *b, Move *m)
 
 void reverse_move(Board *b, Move *m)
 {
-    b->squares[m->from] = m->on_from;
-    b->squares[m->to] = m->on_to;
+    b->squares[m->from] = b->squares[m->to];
+    b->squares[m->to] = b->captures[--(b->move_number)];
+   
+    // Reset previous potential EP capture squares
+    if (ISWHITE(b->squares[m->from]))
+        for (int i = 8; i < 16; i++)
+            if (b->squares[i] == BLACK_EP_PAWN) b->squares[i] = BLACK_PAWN;
+
+    // Reset previous potential EP capture squares
+    if (ISBLACK(b->squares[m->from]))
+        for (int i = 48; i < 56; i++)
+            if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
+
     if (m->side_effect == KS_CASTLE) {
         b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
         b->squares[m->to+1] = b->squares[m->from] == WHITE_CASTLING_KING? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
