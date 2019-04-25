@@ -5,7 +5,7 @@ void make_random_move(Board *b, MoveSet *m)
     if (m->count > 0) {
         int randmove = rand()%m->count;
         printf("Picked random move: %i", randmove);
-        apply_move(b->squares, m->moves+randmove);
+        apply_move(b, m->moves+randmove);
     }
 }
 
@@ -21,10 +21,10 @@ void make_random_move(Board *b, MoveSet *m)
 //    0,   0,   0,   0,   0,   0,   0,   0
 //};
 
-double evaluate(Piece *sq, MoveSet *m, Player p) 
+double evaluate(Board *b, MoveSet *m, Player p) 
 {
-    if (is_checkmate(sq, m)) return WHITEBLACK_VAL(p, -1000.00, 1000.00);
-    if (is_stalemate(sq, m)) return 0.0;
+    if (is_checkmate(b, m)) return WHITEBLACK_VAL(p, -1000.00, 1000.00);
+    if (is_stalemate(b, m)) return 0.0;
 
     double piece_scores = 0.0;
     double bishop_scores = 0.0;
@@ -37,21 +37,21 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
     Move *msq = malloc(sizeof(Move)*30);
     for (int i = 0; i < 64; i++) {
         // Material advantage/disadvantage
-        piece_scores += VALUEOF(sq[i]) * (ISBLACK(sq[i]) ? -1 : 1);
+        piece_scores += VALUEOF(b->squares[i]) * (ISBLACK(b->squares[i]) ? -1 : 1);
         // Count up bishops
-        if (sq[i] == WHITE_BISHOP) bishops[0]++;
-        if (sq[i] == BLACK_BISHOP) bishops[1]++;
+        if (b->squares[i] == WHITE_BISHOP) bishops[0]++;
+        if (b->squares[i] == BLACK_BISHOP) bishops[1]++;
         
         // Moves for each square...
-        if (TURNPIECE(p, sq[i])) {
-            int k = moves_for_square(sq, i, p, msq);
+        if (TURNPIECE(p, b->squares[i])) {
+            int k = moves_for_square(b->squares, i, p, msq);
             for (int j = 0; j < k; j++) {
                 // Total moves available
-                if (!sq[(msq[j].to)]) {
+                if (!b->squares[(msq[j].to)]) {
                     can_move_to += 1* (p == PLAYER_WHITE ? 1 : -1); 
                 // Attacks on better pieces
                 } else {
-                    if (abs(VALUEOF(sq[msq[j].to])) > abs(VALUEOF(sq[msq[j].from]))) {
+                    if (abs(VALUEOF(b->squares[msq[j].to])) > abs(VALUEOF(b->squares[msq[j].from]))) {
                         attack_better_piece += 1* (p == PLAYER_WHITE ? 1 : -1); 
                     } else {
                         attack_equivelant_piece += 1* (p == PLAYER_WHITE ? 1 : -1); 
@@ -82,7 +82,7 @@ double evaluate(Piece *sq, MoveSet *m, Player p)
 // Alpha = best already explored option along the path to the root for the maximizer
 // Beta = best already explored option along the path to the root for the minimizer
 
-Move minimax_choice(Piece *sq, MoveSet *m, Player p)
+Move minimax_choice(Board *b, MoveSet *m, Player p)
 {
     Move choice;
 
@@ -97,9 +97,9 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
     }
                        
     for (int i = 0; i < m->count; i++) {
-        apply_move(sq, (m->moves+i));
-        tmp_evaluation = minimax(sq, SEARCHDEPTH, TOGGLE(p), alpha, beta);
-        reverse_move(sq, m->moves+i);
+        apply_move(b, (m->moves+i));
+        tmp_evaluation = minimax(b, SEARCHDEPTH, TOGGLE(p), alpha, beta);
+        reverse_move(b->squares, m->moves+i);
         if (p == PLAYER_WHITE && tmp_evaluation > alpha) {
             alpha = tmp_evaluation;
             choice = m->moves[i];
@@ -113,19 +113,19 @@ Move minimax_choice(Piece *sq, MoveSet *m, Player p)
     return choice;
 }
 
-double minimax(Piece *sq, int depth, Player p, double alpha, double beta)
+double minimax(Board *b, int depth, Player p, double alpha, double beta)
 {
-    MoveSet *m = all_legal_moves(sq, p);
+    MoveSet *m = all_legal_moves(b, p);
     if (depth == 0 || m->count == 0) {
-        double eval = evaluate(sq, m, p);  
+        double eval = evaluate(b, m, p);  
         free(m->moves);
         free(m);
         return eval;
     }
     
     for (int i = 0; i < m->count; i++) {
-        apply_move(sq, m->moves+i);
-        double tmp_evaluation = minimax(sq, depth-1, TOGGLE(p), alpha, beta);
+        apply_move(b, m->moves+i);
+        double tmp_evaluation = minimax(b, depth-1, TOGGLE(p), alpha, beta);
 
         if (p == PLAYER_WHITE && tmp_evaluation > alpha) {
             alpha = tmp_evaluation;
@@ -134,7 +134,7 @@ double minimax(Piece *sq, int depth, Player p, double alpha, double beta)
             beta = tmp_evaluation;
         }
 
-        reverse_move(sq, m->moves+i);
+        reverse_move(b->squares, m->moves+i);
         if (beta >= alpha) {
             break;
         }

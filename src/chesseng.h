@@ -18,6 +18,7 @@
  */
 
 // piece_moves.c
+
 static int pawn_advances(Piece*, int, Turn, Move*);
 static int pawn_captures(Piece*, int, Turn, Move*);
 static int pawn_ep_captures(Piece*, int, Turn, Move*);
@@ -29,20 +30,20 @@ static int linewise_piece_moves(Piece*, int, int, int, Move*);
 
 // move.c
 
-int square_is_attacked(Piece *, int);
+int square_is_attacked(Board *, int);
 /*@null@*/ static MoveSet* make_moveset(int);
 static void basic_move(Move*, int, int, Piece, Piece);
 static void move_with_side_effect(Move*, int, int, Piece, Piece, MoveSideEffect);
 static int moves_for_square(Piece*, int, Turn, Move*);
-static void remove_illegal_moves(Piece*, /*@dependent@*/ MoveSet*);
-MoveSet *all_legal_moves(Piece *sq, Turn t);
+static void remove_illegal_moves(Board*, /*@dependent@*/ MoveSet*);
+MoveSet *all_legal_moves(Board *, Turn);
 
 // ai.c
 
 void make_random_move(Board*, MoveSet*);
-double evaluate(Piece*, MoveSet*, Player);
-Move minimax_choice(Piece*, MoveSet*, Player);
-double minimax(Piece*, int, Player, double, double);
+double evaluate(Board*, MoveSet*, Player);
+Move minimax_choice(Board*, MoveSet*, Player);
+double minimax(Board*, int, Player, double, double);
 void add_transposition(TranspositionTable*, int, Piece*, Turn, double);
 int find_transposition(TranspositionTable*, int, Piece*, Turn, double*);
 

@@ -15,68 +15,68 @@ void printAllMoves(MoveSet *m) {
     }
 }
 
-MoveSet *all_legal_moves(Piece *sq, Turn t)
+MoveSet *all_legal_moves(Board *b, Turn t)
 {
     int i;
     MoveSet *m = make_moveset(60);
 
     for (i = 0; i < 64; i++) {
         // Add to list of moves we can perform in this position
-        m->count += moves_for_square(sq, i, t, m->moves+m->count);
+        m->count += moves_for_square(b->squares, i, t, m->moves+m->count);
         // Record king position if this is our king
-        if (m->king_pos == -1 && EITHER(sq[i], MYPIECE(t, CASTLING_KING), MYPIECE(t, KING))) m->king_pos = i;
+        if (m->king_pos == -1 && EITHER(b->squares[i], MYPIECE(t, CASTLING_KING), MYPIECE(t, KING))) m->king_pos = i;
     }
-    remove_illegal_moves(sq, m);
+    remove_illegal_moves(b, m);
     return m;
 }
 
-static void remove_illegal_moves(Piece *sq, MoveSet *m)
+static void remove_illegal_moves(Board *b, MoveSet *m)
 {
     int k=0;
     for (int i = 0; i < m->count; i++) {
-        apply_move(sq, m->moves+i);
-        int updated_king_pos = ISKING(sq[m->moves[i].to]) ? m->moves[i].to : m->king_pos;
+        apply_move(b, m->moves+i);
+        int updated_king_pos = ISKING(b->squares[m->moves[i].to]) ? m->moves[i].to : m->king_pos;
 
         // Keep legal moves - which don't leave our king in check
-        if (!square_is_attacked(sq, updated_king_pos)) {
+        if (!square_is_attacked(b, updated_king_pos)) {
             m->moves[k++] = m->moves[i];
         }
-        reverse_move(sq, m->moves+i);
+        reverse_move(b->squares, m->moves+i);
     }
     m->count = k;
 }
 
-int square_is_attacked(Piece *sq, int square)
+int square_is_attacked(Board *b, int square)
 {
-    int attacker = ISBLACK(sq[square]) ? WHITE : BLACK;
+    int attacker = ISBLACK(b->squares[square]) ? WHITE : BLACK;
     if (square == -1) return 0;
     Move *m = malloc(sizeof(Move)*100);
     assert (m != NULL);
-    for (int i = knight_moves(sq, square, m)-1; i >= 0; i--) {
-        if (sq[(m+i)->to] == MYPIECE(attacker, KNIGHT)) {
+    for (int i = knight_moves(b->squares, square, m)-1; i >= 0; i--) {
+        if (b->squares[(m+i)->to] == MYPIECE(attacker, KNIGHT)) {
             free(m);
             return 1;
         }
     }
-    for (int i = linewise_piece_moves(sq, square, 1, 1, m)-1; i >= 0; i--) {
-        if (sq[(m+i)->to] == MYPIECE(attacker, QUEEN)) {
+    for (int i = linewise_piece_moves(b->squares, square, 1, 1, m)-1; i >= 0; i--) {
+        if (b->squares[(m+i)->to] == MYPIECE(attacker, QUEEN)) {
             free(m);
             return 1;
         }
         if (FILE_MAP[(m+i)->to] == FILE_MAP[(m+i)->from] || RANK_MAP[(m+i)->to] == RANK_MAP[(m+i)->from]) {
-            if (sq[(m+i)->to] == MYPIECE(attacker, ROOK) || sq[(m+i)->to] == MYPIECE(attacker, CASTLING_ROOK)) {
+            if (b->squares[(m+i)->to] == MYPIECE(attacker, ROOK) || b->squares[(m+i)->to] == MYPIECE(attacker, CASTLING_ROOK)) {
                 free(m);
                 return 1;
             }
         } else {
-            if (sq[(m+i)->to] == MYPIECE(attacker, BISHOP)) {
+            if (b->squares[(m+i)->to] == MYPIECE(attacker, BISHOP)) {
                 free(m);
                 return 1;
             }
         }
     }
-    for (int i = pawn_captures(sq, square, TOGGLE(attacker), m); i >= 0; i--) {
-        if (sq[(m+i)->to] == MYPIECE(attacker, PAWN) || sq[(m+i)->to] == MYPIECE(attacker, EP_PAWN)) {
+    for (int i = pawn_captures(b->squares, square, TOGGLE(attacker), m); i >= 0; i--) {
+        if (b->squares[(m+i)->to] == MYPIECE(attacker, PAWN) || b->squares[(m+i)->to] == MYPIECE(attacker, EP_PAWN)) {
             free(m);
             return 1;
         }

@@ -42,26 +42,26 @@ Board *copy_board(Board *b)
     return bcopy;
 }
 
-int is_checkmate(Piece *sq, MoveSet *m)
+int is_checkmate(Board *b, MoveSet *m)
 {
-   return m->count == 0 && square_is_attacked(sq, m->king_pos);
+   return m->count == 0 && square_is_attacked(b, m->king_pos);
 }
 
-int is_stalemate(Piece *sq, MoveSet *m)
+int is_stalemate(Board *b, MoveSet *m)
 {
-   return m->count == 0 && !square_is_attacked(sq, m->king_pos);
+   return m->count == 0 && !square_is_attacked(b, m->king_pos);
 }
 
-int is_check(Piece *sq, Player checked)
-{
-    for (int i = 0; i < 64; i++) {
-        if (sq[i] == MYPIECE(checked, KING) || sq[i] == MYPIECE(checked, CASTLING_KING)) {
-            return square_is_attacked(sq, i);
-        }
-    }
-    return -1;
-
-}
+//int is_check(Piece *sq, Player checked)
+//{
+//    for (int i = 0; i < 64; i++) {
+//        if (sq[i] == MYPIECE(checked, KING) || sq[i] == MYPIECE(checked, CASTLING_KING)) {
+//            return square_is_attacked(sq, i);
+//        }
+//    }
+//    return -1;
+//
+//}
 
 
 void FEN(char *fen, Board *b) 
@@ -120,33 +120,33 @@ void standard_position(Board *b)
     FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", b);
 }
 
-void apply_move(Piece *sq, Move *m)
+void apply_move(Board *b, Move *m)
 {
-    sq[m->to] = m->on_from;
-    sq[m->from] = NO_PIECE;
+    b->squares[m->to] = m->on_from;
+    b->squares[m->from] = NO_PIECE;
 
     // Mark potential EP capture squares
-    if (m->to == m->from + 16 && sq[m->to] == BLACK_PAWN) sq[m->to] = BLACK_EP_PAWN;
-    if (m->to == m->from - 16 && sq[m->to] == WHITE_PAWN) sq[m->to] = WHITE_EP_PAWN;
+    if (m->to == m->from + 16 && b->squares[m->to] == BLACK_PAWN) b->squares[m->to] = BLACK_EP_PAWN;
+    if (m->to == m->from - 16 && b->squares[m->to] == WHITE_PAWN) b->squares[m->to] = WHITE_EP_PAWN;
 
     // Reset previous potential EP capture squares
-    if (ISWHITE(sq[m->to]))
+    if (ISWHITE(b->squares[m->to]))
         for (int i = 24; i < 32; i++)
-            if (sq[i] == BLACK_EP_PAWN) sq[i] = BLACK_PAWN;
+            if (b->squares[i] == BLACK_EP_PAWN) b->squares[i] = BLACK_PAWN;
 
     // Reset previous potential EP capture squares
-    if (ISBLACK(sq[m->to]))
+    if (ISBLACK(b->squares[m->to]))
         for (int i = 32; i < 40; i++)
-            if (sq[i] == WHITE_EP_PAWN) sq[i] = WHITE_PAWN;
+            if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
 
     if (m->side_effect == KS_CASTLE) {
-        sq[m->from+1] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
-        sq[m->to+1] = NO_PIECE;
+        b->squares[m->from+1] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
+        b->squares[m->to+1] = NO_PIECE;
     } else if (m->side_effect == QS_CASTLE) {
-        sq[m->from-2] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
-        sq[m->to+4] = NO_PIECE;
+        b->squares[m->from-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_ROOK : BLACK_ROOK;
+        b->squares[m->to+4] = NO_PIECE;
     } else if (m->side_effect == EP_CAPTURE) {
-        sq[m->to + (8 * (ISWHITE(sq[m->to]) ? 1 : -1))] = NO_PIECE;
+        b->squares[m->to + (8 * (ISWHITE(b->squares[m->to]) ? 1 : -1))] = NO_PIECE;
     } else if (m->side_effect == PROMOTION) {
         // this side effect is needed for reverse_move
     }

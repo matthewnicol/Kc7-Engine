@@ -12,23 +12,23 @@ int main ()
     //for (int i = 0; i < 4; i++) {
     while(1) {
         printBoard(b->squares);
-        MoveSet *m = all_legal_moves(b->squares, b->turn);
+        MoveSet *m = all_legal_moves(b, b->turn);
         printAllMoves(m);
-        if (is_checkmate(b->squares, m)) {
+        if (is_checkmate(b, m)) {
             printf("Checkmate!\n");
             free(m->moves);
             free(m);
             break;
         }
-        else if (is_stalemate(b->squares, m)) {
+        else if (is_stalemate(b, m)) {
             printf("Stalemate!\n");
             free(m->moves);
             free(m);
             break;
         }
-        Move mm = minimax_choice(b->squares, m, b->turn);
+        Move mm = minimax_choice(b, m, b->turn);
         printMove(-1, &mm);
-        apply_move(b->squares, &mm);
+        apply_move(b, &mm);
         free(m->moves);
         free(m);
         b->turn = !b->turn;
