@@ -52,18 +52,6 @@ int is_stalemate(Board *b, MoveSet *m)
    return m->count == 0 && !square_is_attacked(b, m->king_pos);
 }
 
-//int is_check(Piece *sq, Player checked)
-//{
-//    for (int i = 0; i < 64; i++) {
-//        if (sq[i] == MYPIECE(checked, KING) || sq[i] == MYPIECE(checked, CASTLING_KING)) {
-//            return square_is_attacked(sq, i);
-//        }
-//    }
-//    return -1;
-//
-//}
-
-
 void FEN(char *fen, Board *b) 
 {
     int i, sq = 0;
@@ -152,20 +140,20 @@ void apply_move(Board *b, Move *m)
     }
 }
 
-void reverse_move(Piece *sq, Move *m)
+void reverse_move(Board *b, Move *m)
 {
-    sq[m->from] = m->on_from;
-    sq[m->to] = m->on_to;
+    b->squares[m->from] = m->on_from;
+    b->squares[m->to] = m->on_to;
     if (m->side_effect == KS_CASTLE) {
-        sq[m->from] = sq[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
-        sq[m->to+1] = sq[m->from] == WHITE_CASTLING_KING? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
-        sq[m->to-1] = NO_PIECE;
+        b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
+        b->squares[m->to+1] = b->squares[m->from] == WHITE_CASTLING_KING? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
+        b->squares[m->to-1] = NO_PIECE;
     } else if (m->side_effect == QS_CASTLE) {
-        sq[m->from] = sq[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
-        sq[m->from-2] = sq[m->to] == WHITE_CASTLING_KING ? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
-        sq[m->to+1] = NO_PIECE;
+        b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;
+        b->squares[m->from-2] = b->squares[m->to] == WHITE_CASTLING_KING ? WHITE_CASTLING_ROOK : BLACK_CASTLING_ROOK;
+        b->squares[m->to+1] = NO_PIECE;
     } else if (m->side_effect == EP_CAPTURE) {
-        sq[m->to + (8 * (ISWHITE(sq[m->to]) ? 1 : -1))] = sq[m->from] == WHITE_PAWN ? BLACK_EP_PAWN : WHITE_EP_PAWN;
+        b->squares[m->to + (8 * (ISWHITE(b->squares[m->to]) ? 1 : -1))] = b->squares[m->from] == WHITE_PAWN ? BLACK_EP_PAWN : WHITE_EP_PAWN;
     } else if (m->side_effect == PROMOTION) {
         // this side effect is needed for reverse_move
     }

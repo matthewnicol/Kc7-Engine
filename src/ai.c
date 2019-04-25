@@ -99,7 +99,7 @@ Move minimax_choice(Board *b, MoveSet *m, Player p)
     for (int i = 0; i < m->count; i++) {
         apply_move(b, (m->moves+i));
         tmp_evaluation = minimax(b, SEARCHDEPTH, TOGGLE(p), alpha, beta);
-        reverse_move(b->squares, m->moves+i);
+        reverse_move(b, m->moves+i);
         if (p == PLAYER_WHITE && tmp_evaluation > alpha) {
             alpha = tmp_evaluation;
             choice = m->moves[i];
@@ -134,7 +134,7 @@ double minimax(Board *b, int depth, Player p, double alpha, double beta)
             beta = tmp_evaluation;
         }
 
-        reverse_move(b->squares, m->moves+i);
+        reverse_move(b, m->moves+i);
         if (beta >= alpha) {
             break;
         }

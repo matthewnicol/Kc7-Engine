@@ -41,7 +41,7 @@ static void remove_illegal_moves(Board *b, MoveSet *m)
         if (!square_is_attacked(b, updated_king_pos)) {
             m->moves[k++] = m->moves[i];
         }
-        reverse_move(b->squares, m->moves+i);
+        reverse_move(b, m->moves+i);
     }
     m->count = k;
 }
