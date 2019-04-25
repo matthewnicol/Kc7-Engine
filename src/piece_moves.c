@@ -67,8 +67,8 @@ static int pawn_promotions(Piece *sq, int square, Turn t, Move *m)
 
 int knight_moves(Piece *sq, int square, Move *m)
 {
-    static int knight_diffs[][2] = {
-        {-1, 2}, {1, 2}, {-1, -2}, {1, -2}, {2, -1}, {2, 1}, {-2, -1}, {-2, 1},
+    static int knight_diffs[] = {
+        -6, 6, -10, 10, -15, 15, -17, 17
     };
 
     static char bad_knight_jumps [][2] = {
@@ -78,7 +78,7 @@ int knight_moves(Piece *sq, int square, Move *m)
     int i = 0, j;
 
     for (j = 0; j < 8; j++) {
-        int sqto = square + (knight_diffs[j][0]*8) + (knight_diffs[j][1]);
+        int sqto = square + knight_diffs[j];
         if (!VALID(sqto) || matches_pair(FILE_MAP[sqto], FILE_MAP[square], bad_knight_jumps)) continue;
         if (sq[sqto] == ' ' || different_team(sq, square, sqto)) {
             basic_move((m+i++), square, sqto); 
@@ -111,28 +111,34 @@ int linewise_piece_moves(Piece *sq, int square, int diagonal, int upanddown, Mov
     int i = 0, j, k;
     int blockaded[] = {0, 0, 0, 0, 0, 0, 0, 0};
     char line_wrapping[][2] = {{'a', 'b'}, {'h', 'g'}, {'\0', '\0'}};
-    for (k = 1; k < 8; k++) {
-        int directions[8] = {
-            square + k,                  square - k,                 
-            square - (k * 8),            square + (k * 8),
-            square + (k * 8) + k,        square - (k * 8) - k,
-            square - (k * 8) + k,        square + (k * 8) - k,
-        };
-        for (j = 0; j < 8; j++) {
+    for (j = 0; j < 8; j++) {
+        for (k = 1; k < 8; k++) {
+            int dest;
+            switch (j) {
+                case 0: dest = square + k; break;
+                case 1: dest = square - k; break;
+                case 2: dest = square - (k * 8); break;
+                case 3: dest = square + (k * 8); break;
+                case 4: dest = square + (k * 8) + k; break;
+                case 5: dest = square - (k * 8) - k; break;
+                case 6: dest = square - (k * 8) + k; break;
+                case 7: dest = square + (k * 8) - k; break;
+            }
+
             if (
                     blockaded[j] 
-                    || !VALID(directions[j]) 
+                    || !VALID(dest) 
                     || (!diagonal && (j > 3)) 
                     || (!upanddown && (j < 4))
-                    || (FILE_MAP[directions[j]] == 'h' && EITHER3(j, 1, 5, 7))
-                    || (FILE_MAP[directions[j]] == 'a' && EITHER3(j, 0, 4, 6)) 
-                    || same_team(sq, square, directions[j])
+                    || (FILE_MAP[dest] == 'h' && EITHER3(j, 1, 5, 7))
+                    || (FILE_MAP[dest] == 'a' && EITHER3(j, 0, 4, 6)) 
+                    || same_team(sq, square, dest)
                     ) {
                 blockaded[j] = 1;
-                continue;
+                break;
             }
-            if (sq[directions[j]] != ' ' && ENEMIES(sq, square, directions[j])) blockaded[j] = 1;
-            basic_move((m+i++), square, directions[j]);
+            if (sq[dest] != ' ' && ENEMIES(sq, square, dest)) blockaded[j] = 1;
+            basic_move((m+i++), square, dest);
         }
     }
     return i;
