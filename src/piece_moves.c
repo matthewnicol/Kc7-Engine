@@ -108,11 +108,9 @@ static int king_moves(Piece *sq, int square, Move *m)
 
 int linewise_piece_moves(Piece *sq, int square, int diagonal, int upanddown, Move *m)
 {
-    int i = 0, j, k;
-    int blockaded[] = {0, 0, 0, 0, 0, 0, 0, 0};
-    char line_wrapping[][2] = {{'a', 'b'}, {'h', 'g'}, {'\0', '\0'}};
-    for (j = 0; j < 8; j++) {
-        for (k = 1; k < 8; k++) {
+    int i = 0;
+    for (int j = 0; j < 8; j++) {
+        for (int k = 1; k < 8; k++) {
             int dest;
             switch (j) {
                 case 0: dest = square + k; break;
@@ -126,19 +124,17 @@ int linewise_piece_moves(Piece *sq, int square, int diagonal, int upanddown, Mov
             }
 
             if (
-                    blockaded[j] 
-                    || !VALID(dest) 
+                    !VALID(dest) 
                     || (!diagonal && (j > 3)) 
                     || (!upanddown && (j < 4))
                     || (FILE_MAP[dest] == 'h' && EITHER3(j, 1, 5, 7))
                     || (FILE_MAP[dest] == 'a' && EITHER3(j, 0, 4, 6)) 
                     || same_team(sq, square, dest)
                     ) {
-                blockaded[j] = 1;
                 break;
             }
-            if (sq[dest] != ' ' && ENEMIES(sq, square, dest)) blockaded[j] = 1;
             basic_move((m+i++), square, dest);
+            if (sq[dest] != ' ' && ENEMIES(sq, square, dest)) break;
         }
     }
     return i;
