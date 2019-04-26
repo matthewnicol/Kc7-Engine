@@ -65,6 +65,18 @@ typedef struct {
 } Move;
 
 typedef struct {
+    long position;
+    int attacked;
+} IsAttackedNode;
+
+//TODO: TURN INTO BST
+typedef struct {
+    int last_pos;
+    int loop;
+    IsAttackedNode *positions;
+} IsAttackedList;
+
+typedef struct {
     double evaluation;
     int depth;
     Piece *squares;
@@ -93,6 +105,7 @@ typedef struct {
      Piece *squares; 
     /*@out@*/ Move *moves;
      Piece *captures;
+     long hash;
      int move_number;
 } Board;
 

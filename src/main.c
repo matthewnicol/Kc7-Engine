@@ -6,6 +6,7 @@ int main ()
     Board *b = new_board();
     assert (b != NULL);
     FEN(FENS[3], b);
+    printf("Position hash: %i", b->hash);
     clock_t start, end;
     double cpu_time_used;
     start = clock();

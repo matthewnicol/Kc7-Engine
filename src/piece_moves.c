@@ -79,10 +79,12 @@ int knight_moves(Piece *sq, int square, Move *m)
 
     for (j = 0; j < 8; j++) {
         int sqto = square + knight_diffs[j];
-        if (!VALID(sqto) || matches_pair(FILE_MAP[sqto], FILE_MAP[square], bad_knight_jumps)) continue;
-        if (sq[sqto] == ' ' || different_team(sq, square, sqto)) {
+        if (
+                !VALID(sqto) 
+               || matches_pair(FILE_MAP[sqto], FILE_MAP[square], bad_knight_jumps)
+               || same_team(sq, square, sqto)
+                ) continue;
             basic_move((m+i++), square, sqto); 
-        }
     } 
     return i;
 }

@@ -2,6 +2,7 @@
 void check_pieces(Board*);
 void check_squares(void);
 void check_moves(Board*);
+void check_hashes(Board *b);
 
 int main ()
 {
@@ -11,6 +12,7 @@ int main ()
     check_squares();
     check_pieces(b);
     check_moves(b);
+    check_hashes(b);
 }
 
 void check_squares() {
@@ -101,29 +103,29 @@ void check_pieces(Board *b) {
 
 void check_moves(Board *b)
 {
-    Move m = {52, 36, WHITE_PAWN, NO_PIECE};
-    Move m2 = {13, 29, BLACK_PAWN, NO_PIECE};
-    Move m3 = {51, 35, WHITE_PAWN, NO_PIECE};
+    Move m = {52, 36};
+    Move m2 = {13, 29};
+    Move m3 = {51, 35};
 
     printf("Checking apply_move(...)\n");
-    apply_move(b->squares, &m);
+    apply_move(b, &m);
     
     if (b->squares[36] != WHITE_EP_PAWN) {
         printf("White EP Pawn not found on square 36 after making a move.\n");
     }
 
-    apply_move(b->squares, &m2);
+    apply_move(b, &m2);
 
     if (b->squares[36] == WHITE_EP_PAWN) {
         printf("White EP Pawn not removed after subsequent move.\n");
     }
 
-    apply_move(b->squares, &m3);
+    apply_move(b, &m3);
 
     if (b->squares[29] == BLACK_EP_PAWN) {
         printf("Black EP Pawn not removed after subsequent move.\n");
     }
-    printBoard(b->squares);
+//    printBoard(b->squares);
 
     printf("Checking moves_for_square(...)\n");
 
@@ -151,6 +153,21 @@ void check_moves(Board *b)
         printf("Tried generating moves for knight. Expected 3... but got %i\n", mcount);
     }
 
+    
+}
 
+void check_hashes(Board *b) {
+   printf("Checking apply_move_hash(...) & reverse_move_hash(...)\n");
+//        printBoard(b->squares);
+    long hash = b->hash;
+    Move m = {8, 24};
+    apply_move(b, &m);
+//        printBoard(b->squares);
+    reverse_move(b, &m);
+//        printBoard(b->squares);
+    long hash2 = b->hash;
+    if (hash != hash2) {
+        printf("Hashes for position not matching after applying and reversing move, %ld & %ld\n", hash, hash2);
+    }
     
 }

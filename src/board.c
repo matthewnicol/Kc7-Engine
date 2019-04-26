@@ -29,6 +29,83 @@ Board *new_board() {
     return b;
 }
 
+long *sq_hashes;
+
+int get_piece_index(Piece p) {
+    int piece_index;
+    switch (p) {
+        case BLACK_PAWN : piece_index = 0; break;
+        case BLACK_EP_PAWN : piece_index = 1; break;
+        case BLACK_CASTLING_ROOK : piece_index = 2; break;
+        case BLACK_ROOK : piece_index = 3; break;
+        case BLACK_CASTLING_KING : piece_index = 4; break;
+        case BLACK_KING : piece_index = 5; break;
+        case BLACK_KNIGHT : piece_index = 6; break;
+        case BLACK_BISHOP : piece_index = 7; break;
+        case BLACK_QUEEN : piece_index = 8; break;
+        case WHITE_PAWN : piece_index = 9; break;
+        case WHITE_EP_PAWN : piece_index = 10; break;
+        case WHITE_CASTLING_ROOK : piece_index = 11; break;
+        case WHITE_ROOK : piece_index = 12; break;
+        case WHITE_CASTLING_KING : piece_index = 13; break;
+        case WHITE_KING : piece_index = 14; break;
+        case WHITE_KNIGHT : piece_index = 15; break;
+        case WHITE_BISHOP : piece_index = 16; break;
+        case WHITE_QUEEN : piece_index = 17; break;
+        default: break; 
+    } 
+    return piece_index;
+
+}
+
+long position_hash(Board *b) 
+{
+    if (sq_hashes == NULL) {
+        sq_hashes = malloc(sizeof(long)*18*64);
+        for (int i = 0; i < 18*64; i++) {
+            sq_hashes[i] = rand();
+        }
+    }
+    b->hash = rand();
+    for (int i = 0; i < 64; i++) {
+        if (b->squares[i] != ' ') {
+            int piece_index = get_piece_index(b->squares[i]);
+            b->hash = b->hash ^ sq_hashes[piece_index * i];
+        }
+    }
+
+}
+
+void reverse_move_hash(Board *b, Move *m)
+{
+    // Remove piece at 'to' square
+    b->hash = b->hash ^ sq_hashes[m->to * get_piece_index(b->squares[m->from])];
+
+    // Add captured piece from 'to' square if existing
+    if (b->captures[b->move_number] != ' ') {
+        b->hash = b->hash ^ sq_hashes[m->to * get_piece_index(b->captures[b->move_number])];
+    }
+
+    // Add piece that moved back on original 'from' square
+    b->hash = b->hash ^ sq_hashes[m->from * get_piece_index(b->squares[m->to])];
+}
+
+void apply_move_hash(Board *b, Move *m)
+{
+    // Remove piece at 'from' square
+    b->hash = b->hash ^ sq_hashes[m->from * get_piece_index(b->squares[m->to])];
+
+    // Remove existing piece at 'to' square
+    if (b->captures[b->move_number-1] != ' ') {
+        b->hash = b->hash ^ sq_hashes[m->to * get_piece_index(b->captures[b->move_number-1])];
+    }
+
+    // Add 'from' piece to 'to' square
+    b->hash = b->hash ^ sq_hashes[m->to * get_piece_index(b->squares[m->to])];
+
+
+}
+
 int is_checkmate(Board *b, MoveSet *m)
 {
    return m->count == 0 && square_is_attacked(b, m->king_pos);
@@ -88,6 +165,7 @@ void FEN(char *fen, Board *b)
         Piece np = b->squares[sq] == WHITE_PAWN? WHITE_EP_PAWN : BLACK_EP_PAWN;
         b->squares[sq] = np;
     }
+    position_hash(b);
 }
 
 void standard_position(Board *b)
@@ -99,19 +177,21 @@ void apply_move(Board *b, Move *m)
 {
 
     b->captures[b->move_number++] = b->squares[m->to];
-    
+
+    b->squares[m->to] = b->squares[m->from];
+    b->squares[m->from] = NO_PIECE;
+
+    apply_move_hash(b, m);
+
     // Reset previous potential EP capture squares
-    if (ISWHITE(b->squares[m->from]))
+    if (ISWHITE(b->squares[m->to]))
         for (int i = 24; i < 32; i++)
             if (b->squares[i] == BLACK_EP_PAWN) b->squares[i] = BLACK_PAWN;
 
     // Reset previous potential EP capture squares
-    if (ISBLACK(b->squares[m->from]))
+    if (ISBLACK(b->squares[m->to]))
         for (int i = 32; i < 40; i++)
             if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
-
-    b->squares[m->to] = b->squares[m->from];
-    b->squares[m->from] = NO_PIECE;
 
     // Mark potential EP capture squares
     if (m->to == m->from + 16 && b->squares[m->to] == BLACK_PAWN) b->squares[m->to] = BLACK_EP_PAWN;
@@ -134,16 +214,18 @@ void reverse_move(Board *b, Move *m)
 {
     b->squares[m->from] = b->squares[m->to];
     b->squares[m->to] = b->captures[--(b->move_number)];
-   
+
     // Reset previous potential EP capture squares
     if (ISWHITE(b->squares[m->from]))
-        for (int i = 8; i < 16; i++)
-            if (b->squares[i] == BLACK_EP_PAWN) b->squares[i] = BLACK_PAWN;
+        for (int i = 48; i < 56; i++)
+            if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
 
     // Reset previous potential EP capture squares
     if (ISBLACK(b->squares[m->from]))
-        for (int i = 48; i < 56; i++)
-            if (b->squares[i] == WHITE_EP_PAWN) b->squares[i] = WHITE_PAWN;
+        for (int i = 8; i < 16; i++)
+            if (b->squares[i] == BLACK_EP_PAWN) b->squares[i] = BLACK_PAWN;
+   
+    reverse_move_hash(b, m);
 
     if (m->side_effect == KS_CASTLE) {
         b->squares[m->from] = b->squares[m->to] == WHITE_KING ? WHITE_CASTLING_KING : BLACK_CASTLING_KING;

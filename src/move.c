@@ -44,31 +44,77 @@ static void remove_illegal_moves(Board *b, MoveSet *m)
     m->count = k;
 }
 
+IsAttackedList sqattacked;
+
+int add_checked_hash(long hash, int checked) 
+{
+    sqattacked.positions[sqattacked.last_pos].position = hash;
+    sqattacked.positions[sqattacked.last_pos].attacked = 1;
+    sqattacked.last_pos++;
+    if (sqattacked.last_pos == 1000) {
+        sqattacked.loop = 1;
+        sqattacked.last_pos = 0;
+    }
+}
+
+int find_checked_hash(long hash) 
+{
+    if (sqattacked.positions == NULL) {
+        sqattacked.positions = malloc(sizeof(IsAttackedNode)*1000);
+        sqattacked.last_pos = 0;
+        sqattacked.loop = 0;
+        return -1;
+    }
+    if (sqattacked.loop) {
+        for (int i = 0; i < 1000; i++) {
+            if (sqattacked.positions[i].position == hash) {
+                return sqattacked.positions[i].attacked;
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < sqattacked.last_pos; i++) {
+            if (sqattacked.positions[i].position == hash) {
+                return sqattacked.positions[i].attacked;
+            }
+        }
+    }
+    return -1;
+
+}
+
 int square_is_attacked(Board *b, int square)
 {
+    int memo = find_checked_hash(b->hash);
+    if (memo > -1) return memo;
+
     int attacker = ISBLACK(b->squares[square]) ? WHITE : BLACK;
-    if (square == -1) return 0;
+        if (square == -1) return 0;
     Move *m = malloc(sizeof(Move)*100);
     assert (m != NULL);
     for (int i = knight_moves(b->squares, square, m)-1; i >= 0; i--) {
         if (b->squares[(m+i)->to] == MYPIECE(attacker, KNIGHT)) {
             free(m);
+            add_checked_hash(b->hash, 1);
             return 1;
         }
     }
     for (int i = linewise_piece_moves(b->squares, square, 1, 1, m)-1; i >= 0; i--) {
         if (b->squares[(m+i)->to] == MYPIECE(attacker, QUEEN)) {
             free(m);
+            add_checked_hash(b->hash, 1);
             return 1;
         }
         if (FILE_MAP[(m+i)->to] == FILE_MAP[(m+i)->from] || RANK_MAP[(m+i)->to] == RANK_MAP[(m+i)->from]) {
             if (b->squares[(m+i)->to] == MYPIECE(attacker, ROOK) || b->squares[(m+i)->to] == MYPIECE(attacker, CASTLING_ROOK)) {
                 free(m);
+            add_checked_hash(b->hash, 1);
                 return 1;
             }
         } else {
             if (b->squares[(m+i)->to] == MYPIECE(attacker, BISHOP)) {
                 free(m);
+            add_checked_hash(b->hash, 1);
                 return 1;
             }
         }
@@ -76,10 +122,12 @@ int square_is_attacked(Board *b, int square)
     for (int i = pawn_captures(b->squares, square, TOGGLE(attacker), m); i >= 0; i--) {
         if (b->squares[(m+i)->to] == MYPIECE(attacker, PAWN) || b->squares[(m+i)->to] == MYPIECE(attacker, EP_PAWN)) {
             free(m);
+            add_checked_hash(b->hash, 1);
             return 1;
         }
     }
     free(m);
+            add_checked_hash(b->hash, 0);
     return 0;
 }
 
